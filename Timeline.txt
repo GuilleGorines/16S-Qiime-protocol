@@ -1,0 +1,15 @@
+
+4-5-2021
+URL de descarga de los datos brutos: https://drive.google.com/file/d/12VtoxKX92ZnjHBi2qY6JlwzoU3B3Je8M/view?usp=sharing_eil&ts=60910b66
+Lecturas: metagenéticas 16S, paired-end
+
+# samplesheet
+muestra N_lecturas  FilenameR1  FilenameR2
+G-bloqu2-bloq   189679.19   G-bloqu2-bloq_S107_L001_R1_001.fastq.gz G-bloqu2-bloq_S107_L001_R2_001.fastq.gz
+P-bloqu2-bloq   163328.746  P-bloqu2-bloq_S108_L001_R1_001.fastq.gz P-bloqu2-bloq_S108_L001_R2_001.fastq.gz
+R-bloqu2-bloq   161898.45   R-bloqu2-bloq_S109_L001_R1_001.fastq.gz R-bloqu2-bloq_S109_L001_R2_001.fastq.gz 
+G-bloqu2-nobloq 75072.1775  G-bloqu2-nobloq_S104_L001_R1_001.fastq.gz   G-bloqu2-nobloq_S104_L001_R2_001.fastq.gz
+P-bloqu2-nobloq 107162.141  P-bloqu2-nobloq_S105_L001_R1_001.fastq.gz   P-bloqu2-nobloq_S105_L001_R2_001.fastq.gz
+R-bloqu2-nobloq 136959.964  R-bloqu2-nobloq_S106_L001_R1_001.fastq.gz   R-bloqu2-nobloq_S106_L001_R2_001.fastq.gz
+
+1. se organizan en directorios con el nombre de muestra
