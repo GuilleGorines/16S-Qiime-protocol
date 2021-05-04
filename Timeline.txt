@@ -12,4 +12,13 @@ G-bloqu2-nobloq 75072.1775  G-bloqu2-nobloq_S104_L001_R1_001.fastq.gz   G-bloqu2
 P-bloqu2-nobloq 107162.141  P-bloqu2-nobloq_S105_L001_R1_001.fastq.gz   P-bloqu2-nobloq_S105_L001_R2_001.fastq.gz
 R-bloqu2-nobloq 136959.964  R-bloqu2-nobloq_S106_L001_R1_001.fastq.gz   R-bloqu2-nobloq_S106_L001_R2_001.fastq.gz
 
-1. se organizan en directorios con el nombre de muestra
+1. Se organizan en directorios con el nombre de muestra
+    1.1 Se genera un script para organizarlos y evitar la organización manual
+
+2. Se genera environment inicialmente con fastqc para control de calidad:
+
+    conda create --name bloqueadores fastqc
+    conda activate bloqueadores
+
+3. Se genera el script fastqc_directories.sh para un control de calidad de todas las muestras
+
