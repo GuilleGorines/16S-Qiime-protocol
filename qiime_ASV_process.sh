@@ -55,17 +55,17 @@ qiime feature-table tabulate-seqs \
 --i-data dada2_result/feature_table_dada2.qza \
 --o-visualization dada2_result/feature_table_tabulated_seqs.qzv
 
-
 ############################################
+mkdir phylogeny_data
 
+# align to the tree
 
-
-qiime phylogeny align-to-tree-mafft.iqtree \
---i-sequences [] \
---o-alignment [] \
---o-masked-alignment [] \
---o-tree [] \
---o-rooted-tree []
+qiime phylogeny align-to-tree-mafft-fasttree \
+--i-sequences dada2_result/rep_seqs_dada2.qza \
+--o-alignment phylogeny_data/aligned_rep_seqs.qza \
+--o-masked-alignment phylogeny_data/masked_aligned_rep_seqs.qza \
+--o-tree phylogeny_data/unrooted_tree.qza \
+--o-rooted-tree phylogeny_data/rooted_tree.qza
 
 qiime diversity core-metrics.phylogenetic \
 --i-phylogeny [] \ #rooted_tree
