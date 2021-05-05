@@ -130,40 +130,34 @@ qiime diversity beta-group-significance \
 mkdir alpha_rarefaction
 
 qiime diversity alpha-rarefaction \
---i-table  \
---i-phylogeny \
---p-max-depth 48299 \
+--i-table dada2_result/featuretable_dada2.qza \
+--i-phylogeny phylogeny_data/rooted_tree.qza \
+--p-max-depth [] \
 --m-metadata-file $METADATA\
---p-iterations 1200 \
---o-visualization []
+--p-iterations [] \
+--o-visualization alpha_rarefaction/alpha_rarefaction.qzv
 
-qiime diversity alpha-rarefaction \
---i-table ../04-qiime/01-dada2/table-dada2.qza \
---i-phylogeny ../04-qiime/03-phylogenetictree/rooted-tree.qza \
---p-max-depth 20000 \
---p-steps 45 \
---m-metadata-file $METADATA \
---p-iterations 1200 
---o-visualization ../04-qiime/05-alpha-rarefaction_2/alpha-rarefaction_20000.qzv
-
+#######################################################
+mkdir taxonomy
 
 # Descarga del modelo
-wget -O ../04-qiime/06-taxonomy/gg-13-8-99-nb-classifier.qza https://data.qiime2.org/2021.2/common/gg-13-8-99-nb-classifier.qza
+wget -O taxonomy/gg-13-8-99-nb-classifier.qza https://data.qiime2.org/2021.2/common/gg-13-8-99-nb-classifier.qza
 
+# Utiliza el modelo para clasificar
 qiime feature-classifier classify-sklearn \
---i-classifier gg-13-8-99-nb-classifier.qza \
---i-reads ../04-qiime/01-dada2/rep-seqs-dada2.qza \ #repseqs
---o-classification ../04-qiime/06-taxonomy/taxonomy.qza
+--i-classifier taxonomy/gg-13-8-99-nb-classifier.qza \
+--i-reads dada2_result/rep_seqs_dada2.qza \ #repseqs
+--o-classification taxonomy/taxonomy.qza
 
 qiime metadata tabulate \
---m-input-file ../04-qiime/06-taxonomy/taxonomy.qza \
---o-visualization ../04-qiime/06-taxonomy/taxonomy.qzv
+--m-input-file taxonomy/taxonomy.qza \
+--o-visualization taxonomy/taxonomy.qzv
 
 qiime taxa barplot \ 
---i-table ../04-qiime/01-dada2/table-dada2.qza \
---i-taxonomy ../04-qiime/06-taxonomy/taxonomy.qza \
---m-metadata-file /home/scratch/irene/project_Natalia16S-bloq/ANALYSIS/samples-metadata.tsv \
---o-visualization ../04-qiime/06-taxonomy/taxa-bar-plots.qzv
+--i-table dada2_result/featuretable_dada2.qza \
+--i-taxonomy taxonomy/taxonomy.qza \
+--m-metadata-file $METADATA \
+--o-visualization taxonomy/taxa-bar-plots.qzv
 
 qiime feature-table filter-samples \
 --i-table ../04-qiime/01-dada2/table-dada2.qza \
