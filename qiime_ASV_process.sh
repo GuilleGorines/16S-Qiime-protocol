@@ -58,8 +58,7 @@ qiime feature-table tabulate-seqs \
 ############################################
 mkdir phylogeny_data
 
-# align to the tree
-
+# alinear al arbol
 qiime phylogeny align-to-tree-mafft-fasttree \
 --i-sequences dada2_result/rep_seqs_dada2.qza \
 --o-alignment phylogeny_data/aligned_rep_seqs.qza \
@@ -67,45 +66,68 @@ qiime phylogeny align-to-tree-mafft-fasttree \
 --o-tree phylogeny_data/unrooted_tree.qza \
 --o-rooted-tree phylogeny_data/rooted_tree.qza
 
-qiime diversity core-metrics.phylogenetic \
---i-phylogeny [] \ #rooted_tree
---i-table [] \
---p-sampling-depth [] \
---m-metadata-file $METADATA \
---output-dir []
+###################################################
+mkdir diversity_data
 
+qiime diversity core-metrics-phylogenetic \
+--i-phylogeny phylogeny_data/rooted_tree.qza \
+--i-table dada2_result/feature_table_dada2.qza \
+--p-sampling-depth [] \ #DEFINIR SAMPLE DEPTH
+--m-metadata-file $METADATA \
+--output-dir diversity_data
+
+# diversidad alfa con faith
 qiime diversity alpha-group-significance \
---i-alpha-diversity ../04-qiime/04-diversity/core-metrics-results/evenness_vector.qza \
+--i-alpha-diversity diversity_data/faith_pd_vector.qza \
 --m-metadata-file $METADATA \
---o-visualization 
+--o-visualization diversity_data/faith_pd_summarized.qzv
 
+# diversidad alfa con pielou
+qiime diversity alpha-group-significance \
+--i-alpha-diversity diversity_data/evenness_vector.qza \
+--m-metadata-file $METADATA \
+--o-visualization diversity_data/evenness_vector_summarized.qzv
+
+# diversidad alfa de shannon
+qiime diversity alpha-group-significance \
+--i-alpha-diversity diversity_data/shannon_vector.qza \
+--m-metadata-file $METADATA \
+--o-visualization diversity_data/shannon_vector_summarized.qzv
+
+# diversidad beta por especies
 qiime diversity beta-group-significance \
---i-distance-matrix [] \
+--i-distance-matrix diversity_data/unweighted_unifrac_distance_matrix.qza \
 --m-metadata-file $METADATA \
 --m-metadata-column species \
---o-visualization \
+--o-visualization diversity_data/unweighted_unifrac_species_significance.qzv \
 --p-pairwise
 
+# diversidad beta por as
 qiime diversity beta-group-significance \
---i-distance-matrix [] \
+--i-distance-matrix diversity_data/unweighted_unifrac_distance_matrix.qza \
 --m-metadata-file $METADATA \
 --m-metadata-column as \
---o-visualization \
+--o-visualization diversity_data/unweighted_unifrac_as_significance.qzv \
 --p-pairwise
 
+# diversidad beta por endophyte
 qiime diversity beta-group-significance \
---i-distance-matrix [] \
+--i-distance-matrix diversity_data/unweighted_unifrac_distance_matrix.qza \
 --m-metadata-file $METADATA \
 --m-metadata-column endophyte \
---o-visualization [] \
+--o-visualization diversity_data/unweighted_unifrac_endophyte_significance.qzv \
 --p-pairwise
 
+# diversidad beta por blocking_primers
 qiime diversity beta-group-significance \
---i-distance-matrix [] \
+--i-distance-matrix diversity_data/unweighted_unifrac_distance_matrix.qza \
 --m-metadata-file $METADATA \
---m-metadata-column blocking-primers \
---o-visualization [] \
+--m-metadata-column blocking_primers \
+--o-visualization diversity_data/unweighted_unifrac_species_significance.qzv \
 --p-pairwise
+
+####################################################
+mkdir alpha_rarefaction
 
 qiime diversity alpha-rarefaction \
 --i-table  \
