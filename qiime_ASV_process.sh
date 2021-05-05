@@ -2,36 +2,63 @@
 MANIFEST = "$1"
 METADATA = "$2"
 
+
+mkdir importsequences
+
 qiime tools import \
 --type 'SampleData[PairedEndSequencesWithQuality]' \
 --input-path $MANIFEST \
---output-path paired-end-demux.qza \
+--output-path importsequences/paired-end-demux.qza \
 --input-format PairedEndFastqManifestPhred33V2
 
-# demultiplexing
 qiime demux summarize \
---i-data paired-end-demux.qza \
---o-visualization paired-end.demux.qzv
+--i-data importsequences/paired-end-demux.qza \
+--o-visualization importsequences/paired-end.demux.qzv
+
 
 # denoising
-qiime dada2 denoise-paired \
---i-demultiplexed-seqs [] \
---p-trunc-len-f [] \
---p-trunc-len-r [] \
---p-n-reads-learn [] \
---p-n-threads [] \
---o-representative-sequences [] \
---o-table [] \
---output-dir []
+#####################################
+mkdir dada2_result
 
+qiime dada2 denoise-paired \
+--i-demultiplexed-seqs importsequences/paired-end-demux.qza \
+--p-trunc-len-f 0 \
+--p-trunc-len-r 0 \
+--p-n-threads 0 \ #max possible
+--o-representative-sequences dada2_result/rep_seqs_dada2.qza \
+--o-table dada2_result/featuretable_dada2.qza \
+--o-denoising-stats dada2_result/stats_dada2.qza
+
+# tabular secuencias representativas
+qiime metadata tabulate \
+--m-input-file dada2_result/rep_seqs_dada2.qza \
+--o-visualization dada2_result/rep_seqs_dada2.qzv
+
+# tabular estadísticas
+qiime metadata tabulate 
+ --m-input-file dada2_result/stats-dada2.qza 
+ --o-visualization dada2_result/stats-dada2.qzv
+
+# tabular feature table
+qiime metadata tabulate \
+--m-input-file dada2_result/feature_table_dada2.qza \
+--o-visualization dada2_result/feature_table_dada2.qzv
+
+# tabular feature table con metadatos
 qiime feature-table summarize \
---i-table [] \
---o-visualization [] \
+--i-table dada2_result/feature_table_dada2.qza \
+--o-visualization dada2_result/feature_table_dada2_summarized.qzv \
 --m-sample-metadata-file $METADATA
 
+# tabular feature con identificador al mapeado
 qiime feature-table tabulate-seqs \
---i-data [] \
---o-visualization []
+--i-data dada2_result/feature_table_dada2.qza \
+--o-visualization dada2_result/feature_table_tabulated_seqs.qzv
+
+
+############################################
+
+
 
 qiime phylogeny align-to-tree-mafft.iqtree \
 --i-sequences [] \
