@@ -2,119 +2,159 @@
 MANIFEST = "$1"
 METADATA = "$2"
 
+
+##############################################
+
+mkdir importsequences
+
 qiime tools import \
 --type 'SampleData[PairedEndSequencesWithQuality]' \
 --input-path $MANIFEST \
---output-path paired-end-demux.qza \
+--output-path importsequences/paired-end-demux.qza \
 --input-format PairedEndFastqManifestPhred33V2
 
-# demultiplexing
 qiime demux summarize \
---i-data paired-end-demux.qza \
---o-visualization paired-end.demux.qzv
+--i-data importsequences/paired-end-demux.qza \
+--o-visualization importsequences/paired-end.demux.qzv
+
 
 # denoising
-qiime dada2 denoise-paired \
---i-demultiplexed-seqs [] \
---p-trunc-len-f [] \
---p-trunc-len-r [] \
---p-n-reads-learn [] \
---p-n-threads [] \
---o-representative-sequences [] \
---o-table [] \
---output-dir []
+#####################################
+mkdir dada2_result
 
+qiime dada2 denoise-paired \
+--i-demultiplexed-seqs importsequences/paired-end-demux.qza \
+--p-trunc-len-f 0 \
+--p-trunc-len-r 0 \
+--p-n-threads 0 \ #max possible
+--o-representative-sequences dada2_result/rep_seqs_dada2.qza \
+--o-table dada2_result/featuretable_dada2.qza \
+--o-denoising-stats dada2_result/stats_dada2.qza
+
+# tabular secuencias representativas
+qiime metadata tabulate \
+--m-input-file dada2_result/rep_seqs_dada2.qza \
+--o-visualization dada2_result/rep_seqs_dada2.qzv
+
+# tabular estadísticas
+qiime metadata tabulate 
+ --m-input-file dada2_result/stats-dada2.qza 
+ --o-visualization dada2_result/stats-dada2.qzv
+
+# tabular feature table
+qiime metadata tabulate \
+--m-input-file dada2_result/feature_table_dada2.qza \
+--o-visualization dada2_result/feature_table_dada2.qzv
+
+# tabular feature table con metadatos
 qiime feature-table summarize \
---i-table [] \
---o-visualization [] \
+--i-table dada2_result/feature_table_dada2.qza \
+--o-visualization dada2_result/feature_table_dada2_summarized.qzv \
 --m-sample-metadata-file $METADATA
 
+# tabular feature con identificador al mapeado
 qiime feature-table tabulate-seqs \
---i-data [] \
---o-visualization []
+--i-data dada2_result/feature_table_dada2.qza \
+--o-visualization dada2_result/feature_table_tabulated_seqs.qzv
 
-qiime phylogeny align-to-tree-mafft.iqtree \
---i-sequences [] \
---o-alignment [] \
---o-masked-alignment [] \
---o-tree [] \
---o-rooted-tree []
+############################################
+mkdir phylogeny_data
 
-qiime diversity core-metrics.phylogenetic \
---i-phylogeny [] \ #rooted_tree
---i-table [] \
---p-sampling-depth [] \
+# alinear al arbol
+qiime phylogeny align-to-tree-mafft-fasttree \
+--i-sequences dada2_result/rep_seqs_dada2.qza \
+--o-alignment phylogeny_data/aligned_rep_seqs.qza \
+--o-masked-alignment phylogeny_data/masked_aligned_rep_seqs.qza \
+--o-tree phylogeny_data/unrooted_tree.qza \
+--o-rooted-tree phylogeny_data/rooted_tree.qza
+
+###################################################
+mkdir diversity_data
+
+qiime diversity core-metrics-phylogenetic \
+--i-phylogeny phylogeny_data/rooted_tree.qza \
+--i-table dada2_result/feature_table_dada2.qza \
+--p-sampling-depth [] \ #DEFINIR SAMPLE DEPTH
 --m-metadata-file $METADATA \
---output-dir []
+--output-dir diversity_data
 
+# diversidad alfa con faith
 qiime diversity alpha-group-significance \
---i-alpha-diversity ../04-qiime/04-diversity/core-metrics-results/evenness_vector.qza \
+--i-alpha-diversity diversity_data/faith_pd_vector.qza \
 --m-metadata-file $METADATA \
---o-visualization 
+--o-visualization diversity_data/faith_pd_summarized.qzv
 
+# diversidad alfa con pielou
+qiime diversity alpha-group-significan 
+qiime diversity alpha-group-significance \
+--i-alpha-diversity diversity_data/shannon_vector.qza \
+--m-metadata-file $METADATA \
+--o-visualization diversity_data/shannon_vector_summarized.qzv
+
+# diversidad beta por especies
 qiime diversity beta-group-significance \
---i-distance-matrix [] \
+--i-distance-matrix diversity_data/unweighted_unifrac_distance_matrix.qza \
 --m-metadata-file $METADATA \
 --m-metadata-column species \
---o-visualization \
+--o-visualization diversity_data/unweighted_unifrac_species_significance.qzv \
 --p-pairwise
 
+# diversidad beta por as
 qiime diversity beta-group-significance \
---i-distance-matrix [] \
+--i-distance-matrix diversity_data/unweighted_unifrac_distance_matrix.qza \
 --m-metadata-file $METADATA \
 --m-metadata-column as \
---o-visualization \
+--o-visualization diversity_data/unweighted_unifrac_as_significance.qzv \
 --p-pairwise
 
+# diversidad beta por endophyte
 qiime diversity beta-group-significance \
---i-distance-matrix [] \
+--i-distance-matrix diversity_data/unweighted_unifrac_distance_matrix.qza \
 --m-metadata-file $METADATA \
 --m-metadata-column endophyte \
---o-visualization [] \
+--o-visualization diversity_data/unweighted_unifrac_endophyte_significance.qzv \
 --p-pairwise
 
+# diversidad beta por blocking_primers
 qiime diversity beta-group-significance \
---i-distance-matrix [] \
+--i-distance-matrix diversity_data/unweighted_unifrac_distance_matrix.qza \
 --m-metadata-file $METADATA \
---m-metadata-column blocking-primers \
---o-visualization [] \
+--m-metadata-column blocking_primers \
+--o-visualization diversity_data/unweighted_unifrac_species_significance.qzv \
 --p-pairwise
 
+####################################################
+mkdir alpha_rarefaction
+
 qiime diversity alpha-rarefaction \
---i-table  \
---i-phylogeny \
---p-max-depth 48299 \
+--i-table dada2_result/featuretable_dada2.qza \
+--i-phylogeny phylogeny_data/rooted_tree.qza \
+--p-max-depth [] \
 --m-metadata-file $METADATA\
---p-iterations 1200 \
---o-visualization []
+--p-iterations [] \
+--o-visualization alpha_rarefaction/alpha_rarefaction.qzv
 
-qiime diversity alpha-rarefaction \
---i-table ../04-qiime/01-dada2/table-dada2.qza \
---i-phylogeny ../04-qiime/03-phylogenetictree/rooted-tree.qza \
---p-max-depth 20000 \
---p-steps 45 \
---m-metadata-file $METADATA \
---p-iterations 1200 
---o-visualization ../04-qiime/05-alpha-rarefaction_2/alpha-rarefaction_20000.qzv
-
+#######################################################
+mkdir taxonomy
 
 # Descarga del modelo
-wget -O ../04-qiime/06-taxonomy/gg-13-8-99-nb-classifier.qza https://data.qiime2.org/2021.2/common/gg-13-8-99-nb-classifier.qza
+wget -O taxonomy/gg-13-8-99-nb-classifier.qza https://data.qiime2.org/2021.2/common/gg-13-8-99-nb-classifier.qza
 
+# Utiliza el modelo para clasificar
 qiime feature-classifier classify-sklearn \
---i-classifier gg-13-8-99-nb-classifier.qza \
---i-reads ../04-qiime/01-dada2/rep-seqs-dada2.qza \ #repseqs
---o-classification ../04-qiime/06-taxonomy/taxonomy.qza
+--i-classifier taxonomy/gg-13-8-99-nb-classifier.qza \
+--i-reads dada2_result/rep_seqs_dada2.qza \ #repseqs
+--o-classification taxonomy/taxonomy.qza
 
 qiime metadata tabulate \
---m-input-file ../04-qiime/06-taxonomy/taxonomy.qza \
---o-visualization ../04-qiime/06-taxonomy/taxonomy.qzv
+--m-input-file taxonomy/taxonomy.qza \
+--o-visualization taxonomy/taxonomy.qzv
 
 qiime taxa barplot \ 
---i-table ../04-qiime/01-dada2/table-dada2.qza \
---i-taxonomy ../04-qiime/06-taxonomy/taxonomy.qza \
---m-metadata-file /home/scratch/irene/project_Natalia16S-bloq/ANALYSIS/samples-metadata.tsv \
---o-visualization ../04-qiime/06-taxonomy/taxa-bar-plots.qzv
+--i-table dada2_result/featuretable_dada2.qza \
+--i-taxonomy taxonomy/taxonomy.qza \
+--m-metadata-file $METADATA \
+--o-visualization taxonomy/taxa-bar-plots.qzv
 
 qiime feature-table filter-samples \
 --i-table ../04-qiime/01-dada2/table-dada2.qza \
