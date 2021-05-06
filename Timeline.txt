@@ -1,7 +1,9 @@
 
+##################################################
 4-5-2021
 URL de descarga de los datos brutos: https://drive.google.com/file/d/12VtoxKX92ZnjHBi2qY6JlwzoU3B3Je8M/view?usp=sharing_eil&ts=60910b66
 Lecturas: metagenéticas 16S, paired-end
+##################################################
 
 # samplesheet
 muestra N_lecturas  FilenameR1  FilenameR2
@@ -14,11 +16,28 @@ R-bloqu2-nobloq 136959.964  R-bloqu2-nobloq_S106_L001_R1_001.fastq.gz   R-bloqu2
 
 1. Se organizan en directorios con el nombre de muestra
     1.1 Se genera un script para organizarlos y evitar la organización manual
+    NOTA 5-5-2021: se genera el script Sample_catalog.py, que hace esto mismo
 
 2. Se genera environment inicialmente con fastqc para control de calidad:
 
-    conda create --name bloqueadores fastqc
-    conda activate bloqueadores
+    conda create --name bloqueadores_control_calidad fastqc
+    conda activate bloqueadores_control_calidad
+    conda install -c anaconda python=3.7
+    conda install fastp
 
-3. Se genera el script fastqc_directories.sh para un control de calidad de todas las muestras
+3. Se genera el script fastqc_directories_trim_fastq.sh para un control de calidad de todas las muestras,
+un trimming y otro fastqc, seguido de la elaboración del manifest para qiime.
+    Tarea realizada el 5-5-2021, resultados junto a muestras.
+
+4. Se genera nuevo environment para lanzar qiime (incompatibilidad con fastqc)
+
+    conda create --name bloqueadores_qiime qiime
+    conda activate bloqueadores_qiime
+
+NOTA: quería haber hecho un análisis por close referenced OTUS al 99%, pero parece no haber support para ello ya.
+Usaré un clasificador distinto para no hacer exactamente el mismo análisis.
+
+dirección del naive bayes entrenado: https://data.qiime2.org/2021.2/common/gg-13-8-99-nb-classifier.qza
+dirección del marker genes: ftp://greengenes.microbio.me/greengenes_release/gg_13_5/gg_13_8_otus.tar.gz
+
 
