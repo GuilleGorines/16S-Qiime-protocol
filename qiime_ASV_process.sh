@@ -1,6 +1,14 @@
 #!/bin/bash
 MANIFEST = "$1"
 METADATA = "$2"
+###########################################
+
+# Entrenar el clasificador
+qiime feature-classifier fit-classifier-naive-bayes \
+  --i-reference-reads ref_seqs_naive_bayes_training.qza \
+  --i-reference-taxonomy  ref_tax_naive_bayes_training.qza \
+  --o-classifier classifier.qza
+
 
 
 ##############################################
