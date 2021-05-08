@@ -58,4 +58,6 @@ EVENTO: El Naive Bayes está desactualizado, con lo que entrenaremos un nuevo mo
 
 7. planteo la posibilidad de realizar un análisis con OTUs en lugar de ASV (archivo qiime_OTU_process.sh)
 El procedimiento es, a partir de los ASV que se generan en el denoising, clusterizarlos en este caso al 95,
-sacar las estadísticas y tablas con normalidad
+sacar las estadísticas y tablas con normalidad.
+
+8. Se genera el script final con apuntes sobre qué parametros elegir (qiime_OTU_process.sh)

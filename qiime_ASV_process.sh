@@ -3,13 +3,16 @@ MANIFEST = "$1"
 METADATA = "$2"
 ###########################################
 
+# Descargar los datos de silva para entrenar el clasificador
+
+wget -O ref_seqs_naive_bayes_training.qza https://data.qiime2.org/2021.4/common/silva-138-99-seqs.qza
+wget -O ref_tax_naive_bayes_training.qza https://data.qiime2.org/2021.4/common/silva-138-99-tax.qza
+
 # Entrenar el clasificador
 qiime feature-classifier fit-classifier-naive-bayes \
   --i-reference-reads ref_seqs_naive_bayes_training.qza \
   --i-reference-taxonomy  ref_tax_naive_bayes_training.qza \
-  --o-classifier classifier.qza
-
-
+  --o-classifier bayes_classifier.qza
 
 ##############################################
 
@@ -36,7 +39,7 @@ qiime dada2 denoise-paired \
 --p-trunc-len-r 0 \
 --p-n-threads 0 \ #max possible
 --o-representative-sequences dada2_result/rep_seqs_dada2.qza \
---o-table dada2_result/featuretable_dada2.qza \
+--o-table dada2_result/feature_table_dada2.qza \
 --o-denoising-stats dada2_result/stats_dada2.qza
 
 # tabular secuencias representativas
@@ -135,7 +138,7 @@ qiime diversity beta-group-significance \
 mkdir alpha_rarefaction
 
 qiime diversity alpha-rarefaction \
---i-table dada2_result/featuretable_dada2.qza \
+--i-table dada2_result/feature_table_dada2.qza \
 --i-phylogeny phylogeny_data/rooted_tree.qza \
 --p-max-depth [] \
 --m-metadata-file $METADATA\
@@ -150,8 +153,8 @@ wget -O taxonomy/gg-13-8-99-nb-classifier.qza https://data.qiime2.org/2021.2/com
 
 # Utiliza el modelo para clasificar
 qiime feature-classifier classify-sklearn \
---i-classifier taxonomy/gg-13-8-99-nb-classifier.qza \
---i-reads dada2_result/rep_seqs_dada2.qza \ #repseqs
+--i-classifier taxonomy/classifier.qza \
+--i-reads dada2_result/rep_seqs_dada2.qza \
 --o-classification taxonomy/taxonomy.qza
 
 qiime metadata tabulate \
@@ -159,7 +162,7 @@ qiime metadata tabulate \
 --o-visualization taxonomy/taxonomy.qzv
 
 qiime taxa barplot \ 
---i-table dada2_result/featuretable_dada2.qza \
+--i-table dada2_result/feature_table_dada2.qza \
 --i-taxonomy taxonomy/taxonomy.qza \
 --m-metadata-file $METADATA \
 --o-visualization taxonomy/taxa-bar-plots.qzv

@@ -2,9 +2,6 @@
 MANIFEST = "$1"
 METADATA = "$2"
 
-
-
-
 ##############################################
 
 mkdir importsequences
@@ -29,7 +26,7 @@ qiime dada2 denoise-paired \
 --i-demultiplexed-seqs importsequences/paired-end-demux.qza \
 --p-trunc-len-f 0 \
 --p-trunc-len-r 0 \
---p-n-threads 0 \ #max possible
+--p-n-threads 0 \
 --o-representative-sequences dada2_result_OTUs/rep_seqs_dada2.qza \
 --o-table dada2_result_OTUs/feature_table_dada2.qza \
 --o-denoising-stats dada2_result_OTUs/stats_dada2.qza
@@ -48,9 +45,9 @@ qiime metadata tabulate \
 --o-visualization dada2_result_OTUs/rep_seqs_95.qzv
 
 # tabular estadísticas
-qiime metadata tabulate 
- --m-input-file dada2_result_OTUs/stats-dada2.qza 
- --o-visualization dada2_result_OTUs/stats-dada2.qzv
+qiime metadata tabulate \
+ --m-input-file dada2_result_OTUs/stats_dada2.qza \
+ --o-visualization dada2_result_OTUs/stats_dada2.qzv
 
 # tabular feature table
 qiime metadata tabulate \
@@ -65,7 +62,7 @@ qiime feature-table summarize \
 
 # tabular feature con identificador al mapeado
 qiime feature-table tabulate-seqs \
---i-data dada2_result_OTUs/feature_table_95.qza \
+--i-data dada2_result_OTUs/rep_seqs_95.qza \
 --o-visualization dada2_result_OTUs/feature_table_tabulated_seqs_95.qzv
 
 ############################################
@@ -80,12 +77,16 @@ qiime phylogeny align-to-tree-mafft-fasttree \
 --o-rooted-tree phylogeny_data_OTUs/rooted_tree_95.qza
 
 ###################################################
-mkdir diversity_data_OTUs
+# La sample depth se saca de la feature table summarized
+# la idea de ese parámetro es coger un número lo más alto posible, excluyendo el mínimo de muestras
+# https://docs.qiime2.org/2019.7/tutorials/moving-pictures/#alpha-and-beta-diversity-analysis
+# en este caso, he elegido 9000, se pierde una muestra pero es la que menos features tiene 
+# (casi 3000 de diferencia)
 
 qiime diversity core-metrics-phylogenetic \
 --i-phylogeny phylogeny_data_OTUs/rooted_tree_95.qza \
---i-table dada2_result_OTUs/feature_table_dada2.qza \
---p-sampling-depth [] \ #DEFINIR SAMPLE DEPTH
+--i-table dada2_result_OTUs/feature_table_95.qza \
+--p-sampling-depth 9000 \
 --m-metadata-file $METADATA \
 --output-dir diversity_data_OTUs
 
@@ -96,7 +97,6 @@ qiime diversity alpha-group-significance \
 --o-visualization diversity_data_OTUs/faith_pd_summarized.qzv
 
 # diversidad alfa con pielou
-qiime diversity alpha-group-significan 
 qiime diversity alpha-group-significance \
 --i-alpha-diversity diversity_data_OTUs/shannon_vector.qza \
 --m-metadata-file $METADATA \
@@ -111,21 +111,23 @@ qiime diversity beta-group-significance \
 --p-pairwise
 
 ####################################################
-mkdir alpha_rarefaction_OTUS
+# La max depth de la alpha rarefaction es el limite del eje x para el plot
+# Se saca consultando la feature table 
+
+mkdir alpha_rarefaction_OTUs
 
 qiime diversity alpha-rarefaction \
---i-table dada2_result_OTUs/featuretable_dada2.qza \
+--i-table dada2_result_OTUs/feature_table_95.qza \
 --i-phylogeny phylogeny_data_OTUs/rooted_tree_95.qza \
---p-max-depth [] \
---m-metadata-file $METADATA\
---p-iterations [] \
---o-visualization alpha_rarefaction/alpha_rarefaction.qzv
+--p-max-depth 7000 \
+--m-metadata-file $METADATA \
+--o-visualization alpha_rarefaction_OTUs/alpha_rarefaction.qzv
 
 #######################################################
 mkdir taxonomy_otus
 
 wget -O silva_rep_seqs.qza https://data.qiime2.org/2021.4/common/silva-138-99-seqs.qza
-get -O silva_tax.qza https://data.qiime2.org/2021.4/common/silva-138-99-tax.qza
+wget -O silva_tax.qza https://data.qiime2.org/2021.4/common/silva-138-99-tax.qza
 
 qiime feature-classifier classify-consensus-vsearch \
 --i-query dada2_result_OTUs/rep_seqs_95.qza \
@@ -139,13 +141,10 @@ qiime metadata tabulate \
 --o-visualization taxonomy_otus/taxonomy.qzv
 
 qiime taxa barplot \
---i-table dada2_result_OTUs/featuretable_dada2.qza \
+--i-table dada2_result_OTUs/feature_table_95.qza \
 --i-taxonomy taxonomy_otus/taxonomy.qza \
 --m-metadata-file $METADATA \
 --o-visualization taxonomy_otus/taxa-bar-plots.qzv
-
-
-
 
 #########################################MODIFICAR AQUI##################
 qiime feature-table filter-samples \
