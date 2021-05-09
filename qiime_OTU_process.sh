@@ -35,7 +35,7 @@ qiime dada2 denoise-paired \
 qiime vsearch cluster-features-de-novo \
 --i-table dada2_result_OTUs/feature_table_dada2.qza \
 --i-sequences dada2_result_OTUs/rep_seqs_dada2.qza \
---p-perc-identity 0.95 \
+--p-perc-identity 0.99 \
 --o-clustered-table dada2_result_OTUs/feature_table_95.qza \
 --o-clustered-sequences dada2_result_OTUs/rep_seqs_95.qza 
 
@@ -82,11 +82,12 @@ qiime phylogeny align-to-tree-mafft-fasttree \
 # https://docs.qiime2.org/2019.7/tutorials/moving-pictures/#alpha-and-beta-diversity-analysis
 # en este caso, he elegido 9000, se pierde una muestra pero es la que menos features tiene 
 # (casi 3000 de diferencia)
+# NOTA: igual debería coger el mínimo o el máximo?
 
 qiime diversity core-metrics-phylogenetic \
 --i-phylogeny phylogeny_data_OTUs/rooted_tree_95.qza \
 --i-table dada2_result_OTUs/feature_table_95.qza \
---p-sampling-depth 9000 \
+--p-sampling-depth 25000 \
 --m-metadata-file $METADATA \
 --output-dir diversity_data_OTUs
 
@@ -119,7 +120,7 @@ mkdir alpha_rarefaction_OTUs
 qiime diversity alpha-rarefaction \
 --i-table dada2_result_OTUs/feature_table_95.qza \
 --i-phylogeny phylogeny_data_OTUs/rooted_tree_95.qza \
---p-max-depth 7000 \
+--p-max-depth 22700 \
 --m-metadata-file $METADATA \
 --o-visualization alpha_rarefaction_OTUs/alpha_rarefaction.qzv
 
@@ -133,7 +134,7 @@ qiime feature-classifier classify-consensus-vsearch \
 --i-query dada2_result_OTUs/rep_seqs_95.qza \
 --i-reference-reads silva_rep_seqs.qza \
 --i-reference-taxonomy silva_tax.qza \
---p-perc-identity 0.95 \
+--p-perc-identity 0.99 \
 --o-classification taxonomy_otus/taxonomy.qza
 
 qiime metadata tabulate \
@@ -143,19 +144,19 @@ qiime metadata tabulate \
 qiime taxa barplot \
 --i-table dada2_result_OTUs/feature_table_95.qza \
 --i-taxonomy taxonomy_otus/taxonomy.qza \
---m-metadata-file $METADATA \
+--m-metadata-file $METADATA\
 --o-visualization taxonomy_otus/taxa-bar-plots.qzv
 
 #########################################MODIFICAR AQUI##################
 qiime feature-table filter-samples \
---i-table ../04-qiime/01-dada2/table-dada2.qza \
---m-metadata-file /home/scratch/irene/project_Natalia16S-bloq/ANALYSIS/samples-metadata.tsv \
+--i-table dada2_result_OTUs/feature_table_95.qza \
+--m-metadata-file  $METADATA \
 --p-where "[block]='blocked'" \
---o-filtered-table ../04-qiime/07-differencial-abundance/montana-table.qza
+--o-filtered-table taxonomy_otus/montana-table_blocked.qza
 
 qiime feature-table filter-samples \
---i-table ../04-qiime/01-dada2/table-dada2.qza \
---m-metadata-file /home/scratch/irene/project_Natalia16S-bloq/ANALYSIS/samples-metadata.tsv \
+--i-table dada2_result_OTUs/feature_table_95.qza \
+--m-metadata-file  $METADATA \
 --p-where "[block]='not blocked'" \
---o-filtered-table ../04-qiime/07-differencial-abundance/montana-table.qza
+--o-filtered-table taxonomy_otus/montana-table_notblocked.qza
 
