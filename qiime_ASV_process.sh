@@ -15,7 +15,6 @@ qiime feature-classifier fit-classifier-naive-bayes \
   --o-classifier bayes_classifier.qza
 
 ##############################################
-
 mkdir importsequences
 
 qiime tools import \

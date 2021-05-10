@@ -16,7 +16,7 @@ qiime tools import \
 # visualizar secuencias
 qiime demux summarize \
 --i-data importsequences/paired-end-demux.qza \
---o-visualization importsequences/paired-end.demux.qzv
+--o-visualization importsequences/paired-end-demux.qzv
 
 #####################################
 mkdir dada2_result_OTUs
