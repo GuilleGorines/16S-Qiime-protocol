@@ -144,7 +144,7 @@ qiime metadata tabulate \
 qiime taxa barplot \
 --i-table dada2_result_OTUs/feature_table_95.qza \
 --i-taxonomy taxonomy_otus/taxonomy.qza \
---m-metadata-file $METADATA\
+--m-metadata-file $METADATA \
 --o-visualization taxonomy_otus/taxa-bar-plots.qzv
 
 #########################################MODIFICAR AQUI##################
