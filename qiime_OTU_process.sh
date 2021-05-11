@@ -35,7 +35,7 @@ qiime dada2 denoise-paired \
 qiime vsearch cluster-features-de-novo \
 --i-table dada2_result_OTUs/feature_table_dada2.qza \
 --i-sequences dada2_result_OTUs/rep_seqs_dada2.qza \
---p-perc-identity 0.99 \
+--p-perc-identity 0.95 \
 --o-clustered-table dada2_result_OTUs/feature_table_95.qza \
 --o-clustered-sequences dada2_result_OTUs/rep_seqs_95.qza 
 

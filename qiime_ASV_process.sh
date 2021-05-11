@@ -36,7 +36,7 @@ qiime dada2 denoise-paired \
 --i-demultiplexed-seqs importsequences/paired-end-demux.qza \
 --p-trunc-len-f 0 \
 --p-trunc-len-r 0 \
---p-n-threads 0 \ #max possible
+--p-n-threads 0 \
 --o-representative-sequences dada2_result/rep_seqs_dada2.qza \
 --o-table dada2_result/feature_table_dada2.qza \
 --o-denoising-stats dada2_result/stats_dada2.qza
@@ -47,9 +47,9 @@ qiime metadata tabulate \
 --o-visualization dada2_result/rep_seqs_dada2.qzv
 
 # tabular estadísticas
-qiime metadata tabulate 
- --m-input-file dada2_result/stats-dada2.qza 
- --o-visualization dada2_result/stats-dada2.qzv
+qiime metadata tabulate \
+ --m-input-file dada2_result/stats_dada2.qza \
+ --o-visualization dada2_result/stats_dada2.qzv
 
 # tabular feature table
 qiime metadata tabulate \
@@ -64,7 +64,7 @@ qiime feature-table summarize \
 
 # tabular feature con identificador al mapeado
 qiime feature-table tabulate-seqs \
---i-data dada2_result/feature_table_dada2.qza \
+--i-data dada2_result/rep_seqs_dada2.qza \
 --o-visualization dada2_result/feature_table_tabulated_seqs.qzv
 
 ############################################
@@ -79,12 +79,11 @@ qiime phylogeny align-to-tree-mafft-fasttree \
 --o-rooted-tree phylogeny_data/rooted_tree.qza
 
 ###################################################
-mkdir diversity_data
 
 qiime diversity core-metrics-phylogenetic \
 --i-phylogeny phylogeny_data/rooted_tree.qza \
 --i-table dada2_result/feature_table_dada2.qza \
---p-sampling-depth [] \ #DEFINIR SAMPLE DEPTH
+--p-sampling-depth 24196 \
 --m-metadata-file $METADATA \
 --output-dir diversity_data
 
@@ -95,7 +94,6 @@ qiime diversity alpha-group-significance \
 --o-visualization diversity_data/faith_pd_summarized.qzv
 
 # diversidad alfa con pielou
-qiime diversity alpha-group-significan 
 qiime diversity alpha-group-significance \
 --i-alpha-diversity diversity_data/shannon_vector.qza \
 --m-metadata-file $METADATA \
@@ -105,24 +103,8 @@ qiime diversity alpha-group-significance \
 qiime diversity beta-group-significance \
 --i-distance-matrix diversity_data/unweighted_unifrac_distance_matrix.qza \
 --m-metadata-file $METADATA \
---m-metadata-column species \
+--m-metadata-column blocking-primers \
 --o-visualization diversity_data/unweighted_unifrac_species_significance.qzv \
---p-pairwise
-
-# diversidad beta por as
-qiime diversity beta-group-significance \
---i-distance-matrix diversity_data/unweighted_unifrac_distance_matrix.qza \
---m-metadata-file $METADATA \
---m-metadata-column as \
---o-visualization diversity_data/unweighted_unifrac_as_significance.qzv \
---p-pairwise
-
-# diversidad beta por endophyte
-qiime diversity beta-group-significance \
---i-distance-matrix diversity_data/unweighted_unifrac_distance_matrix.qza \
---m-metadata-file $METADATA \
---m-metadata-column endophyte \
---o-visualization diversity_data/unweighted_unifrac_endophyte_significance.qzv \
 --p-pairwise
 
 # diversidad beta por blocking_primers
@@ -140,8 +122,7 @@ qiime diversity alpha-rarefaction \
 --i-table dada2_result/feature_table_dada2.qza \
 --i-phylogeny phylogeny_data/rooted_tree.qza \
 --p-max-depth [] \
---m-metadata-file $METADATA\
---p-iterations [] \
+--m-metadata-file $METADATA \
 --o-visualization alpha_rarefaction/alpha_rarefaction.qzv
 
 #######################################################
@@ -152,7 +133,7 @@ wget -O taxonomy/gg-13-8-99-nb-classifier.qza https://data.qiime2.org/2021.2/com
 
 # Utiliza el modelo para clasificar
 qiime feature-classifier classify-sklearn \
---i-classifier taxonomy/classifier.qza \
+--i-classifier bayes_classifier_training/bayes_classifier.qza \
 --i-reads dada2_result/rep_seqs_dada2.qza \
 --o-classification taxonomy/taxonomy.qza
 
@@ -160,7 +141,7 @@ qiime metadata tabulate \
 --m-input-file taxonomy/taxonomy.qza \
 --o-visualization taxonomy/taxonomy.qzv
 
-qiime taxa barplot \ 
+qiime taxa barplot \
 --i-table dada2_result/feature_table_dada2.qza \
 --i-taxonomy taxonomy/taxonomy.qza \
 --m-metadata-file $METADATA \
