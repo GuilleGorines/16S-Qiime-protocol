@@ -3,24 +3,12 @@ MANIFEST = "$1"
 METADATA = "$2"
 ###########################################
 
-# Descargar los datos de silva para entrenar el clasificador
-
-wget -O ref_seqs_naive_bayes_training.qza https://data.qiime2.org/2021.4/common/silva-138-99-seqs.qza
-wget -O ref_tax_naive_bayes_training.qza https://data.qiime2.org/2021.4/common/silva-138-99-tax.qza
-
-# Entrenar el clasificador
-qiime feature-classifier fit-classifier-naive-bayes \
-  --i-reference-reads ref_seqs_naive_bayes_training.qza \
-  --i-reference-taxonomy  ref_tax_naive_bayes_training.qza \
-  --o-classifier bayes_classifier.qza
-
-##############################################
 mkdir importsequences
 
 qiime tools import \
 --type 'SampleData[PairedEndSequencesWithQuality]' \
 --input-path $MANIFEST \
---output-path importsequences/paired-end-demux.qza \
+--output-path importsequences/paired-end.qza \
 --input-format PairedEndFastqManifestPhred33V2
 
 qiime demux summarize \
@@ -57,6 +45,7 @@ qiime metadata tabulate \
 --o-visualization dada2_result/feature_table_dada2.qzv
 
 # tabular feature table con metadatos
+# NOTA: de aquí se saca la sampling depth
 qiime feature-table summarize \
 --i-table dada2_result/feature_table_dada2.qza \
 --o-visualization dada2_result/feature_table_dada2_summarized.qzv \
@@ -79,49 +68,57 @@ qiime phylogeny align-to-tree-mafft-fasttree \
 --o-rooted-tree phylogeny_data/rooted_tree.qza
 
 ###################################################
-
+#NOTA: SAMPLING DEPTH SE SACA DE feature_table_dada2_summarized.qzv
 qiime diversity core-metrics-phylogenetic \
 --i-phylogeny phylogeny_data/rooted_tree.qza \
 --i-table dada2_result/feature_table_dada2.qza \
---p-sampling-depth 24196 \
+--p-sampling-depth 12731 \
 --m-metadata-file $METADATA \
 --output-dir diversity_data
 
 # diversidad alfa con faith
+# NOTA: NO SALDRÁ SI CADA GRUPO TIENE SOLO UNA MUESTRA
 qiime diversity alpha-group-significance \
 --i-alpha-diversity diversity_data/faith_pd_vector.qza \
 --m-metadata-file $METADATA \
 --o-visualization diversity_data/faith_pd_summarized.qzv
 
 # diversidad alfa con pielou
+# NOTA: NO SALDRÁ SI CADA GRUPO TIENE SOLO UNA MUESTRA
 qiime diversity alpha-group-significance \
 --i-alpha-diversity diversity_data/shannon_vector.qza \
 --m-metadata-file $METADATA \
 --o-visualization diversity_data/shannon_vector_summarized.qzv
 
 # diversidad beta por especies
+# NOTA: NO SALDRÁ SI CADA GRUPO TIENE SOLO UNA MUESTRA
+# NOTA: CAMBIAR EL METADATA COLUMN SEGUN NECESIDADES
 qiime diversity beta-group-significance \
 --i-distance-matrix diversity_data/unweighted_unifrac_distance_matrix.qza \
 --m-metadata-file $METADATA \
---m-metadata-column blocking-primers \
+--m-metadata-column group \
 --o-visualization diversity_data/unweighted_unifrac_species_significance.qzv \
 --p-pairwise
 
 # diversidad beta por blocking_primers
+# NOTA: NO SALDRÁ SI CADA GRUPO TIENE SOLO UNA MUESTRA
+# NOTA: CAMBIAR EL METADATA COLUMN SEGUN NECESIDADES
 qiime diversity beta-group-significance \
 --i-distance-matrix diversity_data/unweighted_unifrac_distance_matrix.qza \
 --m-metadata-file $METADATA \
---m-metadata-column blocking_primers \
+--m-metadata-column group \
 --o-visualization diversity_data/unweighted_unifrac_species_significance.qzv \
 --p-pairwise
 
 ####################################################
 mkdir alpha_rarefaction
+# NOTA: max_depth es el valor máximo del eje X
+# posibilidad: usar el numero maximo de fetures encontrado en la summarized table
 
 qiime diversity alpha-rarefaction \
 --i-table dada2_result/feature_table_dada2.qza \
 --i-phylogeny phylogeny_data/rooted_tree.qza \
---p-max-depth [] \
+--p-max-depth 15000 \
 --m-metadata-file $METADATA \
 --o-visualization alpha_rarefaction/alpha_rarefaction.qzv
 
@@ -130,6 +127,18 @@ mkdir taxonomy
 
 # Descarga del modelo
 wget -O taxonomy/gg-13-8-99-nb-classifier.qza https://data.qiime2.org/2021.2/common/gg-13-8-99-nb-classifier.qza
+
+# Entrenar el clasificador
+
+mkdir bayes_classifier_training
+
+wget -O bayes_classifier_training/ref_seqs_naive_bayes_training.qza https://data.qiime2.org/2021.4/common/silva-138-99-seqs.qza
+wget -O bayes_classifier_training/ref_tax_naive_bayes_training.qza https://data.qiime2.org/2021.4/common/silva-138-99-tax.qza
+
+qiime feature-classifier fit-classifier-naive-bayes \
+  --i-reference-reads bayes_classifier_training/ref_seqs_naive_bayes_training.qza \
+  --i-reference-taxonomy  bayes_classifier_training/ref_tax_naive_bayes_training.qza \
+  --o-classifier bayes_classifier_training/bayes_classifier.qza
 
 # Utiliza el modelo para clasificar
 qiime feature-classifier classify-sklearn \
@@ -147,6 +156,7 @@ qiime taxa barplot \
 --m-metadata-file $METADATA \
 --o-visualization taxonomy/taxa-bar-plots.qzv
 
+# 
 qiime feature-table filter-samples \
 --i-table ../04-qiime/01-dada2/table-dada2.qza \
 --m-metadata-file /home/scratch/irene/project_Natalia16S-bloq/ANALYSIS/samples-metadata.tsv \
