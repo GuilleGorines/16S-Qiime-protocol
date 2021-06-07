@@ -3,17 +3,20 @@ MANIFEST = "$1"
 METADATA = "$2"
 ###########################################
 
+
+
+##############################################
 mkdir importsequences
 
 qiime tools import \
 --type 'SampleData[PairedEndSequencesWithQuality]' \
 --input-path $MANIFEST \
---output-path importsequences/paired-end.qza \
+--output-path importsequences/paired-end-demux.qza \
 --input-format PairedEndFastqManifestPhred33V2
 
 qiime demux summarize \
 --i-data importsequences/paired-end-demux.qza \
---o-visualization importsequences/paired-end.demux.qzv
+--o-visualization importsequences/paired-end-demux.qzv
 
 
 # denoising
@@ -72,7 +75,7 @@ qiime phylogeny align-to-tree-mafft-fasttree \
 qiime diversity core-metrics-phylogenetic \
 --i-phylogeny phylogeny_data/rooted_tree.qza \
 --i-table dada2_result/feature_table_dada2.qza \
---p-sampling-depth 12731 \
+--p-sampling-depth 504 \
 --m-metadata-file $METADATA \
 --output-dir diversity_data
 
@@ -118,7 +121,7 @@ mkdir alpha_rarefaction
 qiime diversity alpha-rarefaction \
 --i-table dada2_result/feature_table_dada2.qza \
 --i-phylogeny phylogeny_data/rooted_tree.qza \
---p-max-depth 15000 \
+--p-max-depth 1009 \
 --m-metadata-file $METADATA \
 --o-visualization alpha_rarefaction/alpha_rarefaction.qzv
 
@@ -159,13 +162,13 @@ qiime taxa barplot \
 # 
 qiime feature-table filter-samples \
 --i-table ../04-qiime/01-dada2/table-dada2.qza \
---m-metadata-file /home/scratch/irene/project_Natalia16S-bloq/ANALYSIS/samples-metadata.tsv \
+--m-metadata-file $METADATA \
 --p-where "[block]='blocked'" \
 --o-filtered-table ../04-qiime/07-differencial-abundance/montana-table.qza
 
 qiime feature-table filter-samples \
 --i-table ../04-qiime/01-dada2/table-dada2.qza \
---m-metadata-file /home/scratch/irene/project_Natalia16S-bloq/ANALYSIS/samples-metadata.tsv \
+--m-metadata-file $METADATA \
 --p-where "[block]='not blocked'" \
 --o-filtered-table ../04-qiime/07-differencial-abundance/montana-table.qza
 
