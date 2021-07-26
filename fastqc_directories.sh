@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# 1: directory containing the raw data (after Sample_catalog.py)
+# 1: directory containing the raw data (after Sample_catalog.py) (typically RAW/)
 DIRECTORY_input="$1"
 DIRECTORY=$(realpath $DIRECTORY_input)
 
-# 2: directory on which the full analysis is performed
+# 2: directory on which the full analysis is performed (typically .) 
 MOTHER_DIR_input="$2"
 MOTHER_DIR=$(realpath $MOTHER_DIR_input)
 
