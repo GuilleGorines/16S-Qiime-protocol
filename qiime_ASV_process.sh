@@ -116,7 +116,7 @@ qiime diversity beta-group-significance \
 ####################################################
 mkdir alpha_rarefaction
 # NOTA: max_depth es el valor máximo del eje X
-# posibilidad: usar el numero maximo de fetures encontrado en la summarized table
+# posibilidad: usar el numero maximo de features encontrado en la summarized table
 
 qiime diversity alpha-rarefaction \
 --i-table dada2_result/feature_table_dada2.qza \
@@ -129,23 +129,28 @@ qiime diversity alpha-rarefaction \
 mkdir taxonomy
 
 # Descarga del modelo
-wget -O taxonomy/gg-13-8-99-nb-classifier.qza https://data.qiime2.org/2021.2/common/gg-13-8-99-nb-classifier.qza
+# V 2021.2
+wget -O taxonomy/bayes-classifier.qza https://data.qiime2.org/2021.2/common/gg-13-8-99-nb-classifier.qza
+# V 2021.4
+wget -O taxonomy/bayes-classifier.qza ttps://data.qiime2.org/2021.4/common/gg-13-8-99-nb-classifier.qza
 
-# Entrenar el clasificador
+#######################################################
+# Entrenar el modelo (alternativa)
 
-mkdir bayes_classifier_training
-
-wget -O bayes_classifier_training/ref_seqs_naive_bayes_training.qza https://data.qiime2.org/2021.4/common/silva-138-99-seqs.qza
-wget -O bayes_classifier_training/ref_tax_naive_bayes_training.qza https://data.qiime2.org/2021.4/common/silva-138-99-tax.qza
+wget -O taxonomy/ref_seqs_naive_bayes_training.qza https://data.qiime2.org/2021.4/common/silva-138-99-seqs.qza
+wget -O taxonomy/ref_tax_naive_bayes_training.qza https://data.qiime2.org/2021.4/common/silva-138-99-tax.qza
 
 qiime feature-classifier fit-classifier-naive-bayes \
-  --i-reference-reads bayes_classifier_training/ref_seqs_naive_bayes_training.qza \
-  --i-reference-taxonomy  bayes_classifier_training/ref_tax_naive_bayes_training.qza \
-  --o-classifier bayes_classifier_training/bayes_classifier.qza
+  --i-reference-reads taxonomy/ref_seqs_naive_bayes_training.qza \
+  --i-reference-taxonomy taxonomy/ref_tax_naive_bayes_training.qza \
+  --o-classifier taxonomy/bayes_classifier.qza
+  
+#######################################################
 
 # Utiliza el modelo para clasificar
+
 qiime feature-classifier classify-sklearn \
---i-classifier bayes_classifier_training/bayes_classifier.qza \
+--i-classifier taxonomy/bayes_classifier.qza \
 --i-reads dada2_result/rep_seqs_dada2.qza \
 --o-classification taxonomy/taxonomy.qza
 
