@@ -132,7 +132,7 @@ mkdir taxonomy
 # V 2021.2
 wget -O taxonomy/bayes-classifier.qza https://data.qiime2.org/2021.2/common/gg-13-8-99-nb-classifier.qza
 # V 2021.4
-wget -O taxonomy/bayes-classifier.qza ttps://data.qiime2.org/2021.4/common/gg-13-8-99-nb-classifier.qza
+wget -O taxonomy/bayes-classifier.qza https://data.qiime2.org/2021.4/common/gg-13-8-99-nb-classifier.qza
 
 #######################################################
 # Entrenar el modelo (alternativa)
