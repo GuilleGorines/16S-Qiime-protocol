@@ -54,7 +54,7 @@ def create(final_groups, truepath):
     
      with open(f"{truepath}/samplesheet.tsv","w") as outfile:
             
-        outfile.write("samplename\tforward-absolute-filepath\treverse-absolute-filepath\n")
+        outfile.write("sample-id\tforward-absolute-filepath\treverse-absolute-filepath\n")
     
         for file1,file2,samplename in final_groups:
 
