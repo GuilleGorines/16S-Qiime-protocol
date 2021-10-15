@@ -1,6 +1,7 @@
 import sys
 import os
 
+# Datadir is typically the RAW 
 datadir = sys.argv[1]
 
 def find_longest_match(list_string1,list_string2):
@@ -57,15 +58,19 @@ def create(final_groups, truepath):
         outfile.write("sample-id\tforward-absolute-filepath\treverse-absolute-filepath\n")
     
         for file1,file2,samplename in final_groups:
+            
+            final_samplename = samplename.replace("_R","")
 
-            targetdir = f"{truepath}/{samplename}"
+            targetdir = f"{truepath}/{final_samplename}"
 
             os.mkdir(targetdir)
 
             os.replace(f"{truepath}/{file1}",f"{targetdir}/{file1}")
             os.replace(f"{truepath}/{file2}",f"{targetdir}/{file2}")
             
-            outfile.write(f"{samplename}\t{targetdir}/{file1}\t{targetdir}/{file2}\n")
+            
+
+            outfile.write(f"{final_samplename}\t{targetdir}/{file1}\t{targetdir}/{file2}\n")
        
 R1_files = []
 R2_files = []
