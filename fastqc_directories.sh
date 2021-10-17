@@ -56,9 +56,7 @@ do
     fastqc -o ${MOTHER_DIR}/RESULTS/${samplename}_quality *_trimmed_*
     mv ${samplename}_trimmed_R1.fq.gz $MOTHER_DIR/TRIMMED
     mv ${samplename}_trimmed_R2.fq.gz $MOTHER_DIR/TRIMMED
-
-    mv ${samplename}_trim.html $MOTHER_DIR/RESULTS 
-     
+    
     # add the data to the sample manifest
     printf "${samplename}\t${MOTHER_DIR}/TRIMMED/${samplename}_trimmed_R1.fq.gz\t${MOTHER_DIR}/TRIMMED/${samplename}_trimmed_R2.fq.gz\n" >> ${MOTHER_DIR}/ANALYSIS/manifest.tsv
 done
