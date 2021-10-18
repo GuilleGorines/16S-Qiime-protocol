@@ -47,8 +47,8 @@ do
     --length_required 250 \
     --qualified_quality_phred 30 \
     --cut_window_size 4 \
-    --html  ${MOTHER_DIR}/RESULTS/${samplename}_quality/${samplename}_trim_report.html \
-    --json  ${MOTHER_DIR}/RESULTS/${samplename}_quality/${samplename}_trim_report.json \
+    --html  ${MOTHER_DIR}/RESULTS/${samplename}_quality/${samplename}_trim_report_fastp.html \
+    --json  ${MOTHER_DIR}/RESULTS/${samplename}_quality/${samplename}_trim_report_fastp.json \
     -o ${samplename}_trimmed_R1.fq.gz \
     -O ${samplename}_trimmed_R2.fq.gz  
 
@@ -61,4 +61,5 @@ do
     printf "${samplename}\t${MOTHER_DIR}/TRIMMED/${samplename}_trimmed_R1.fq.gz\t${MOTHER_DIR}/TRIMMED/${samplename}_trimmed_R2.fq.gz\n" >> ${MOTHER_DIR}/ANALYSIS/manifest.tsv
 done
 
-# Ready to launch multiqc on RESULTS
+# Ready to launch multiqc on RESULTS (use the correct environment for it)
+# multiqc RESULTS/*
