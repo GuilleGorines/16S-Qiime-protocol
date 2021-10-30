@@ -103,21 +103,6 @@ qiime diversity beta-group-significance \
 --o-visualization diversity_data/unweighted_unifrac_species_significance.qzv \
 --p-pairwise
 
-# beta diversidad y pcoa segun indice de bray-curtis
-mkdir beta-diversity
-qiime diversity-lib bray-curtis --i-table dada2_result/feature_table_dada2.qza --o-distance-matrix beta-diversity/bray_curtis_matrix.qza --p-n-jobs "auto"
-
-
-# diversidad beta por blocking_primers
-# NOTA: NO SALDRÁ SI CADA GRUPO TIENE SOLO UNA MUESTRA
-# NOTA: CAMBIAR EL METADATA COLUMN SEGUN NECESIDADES
-qiime diversity beta-group-significance \
---i-distance-matrix diversity_data/unweighted_unifrac_distance_matrix.qza \
---m-metadata-file $METADATA \
---m-metadata-column group \
---o-visualization diversity_data/unweighted_unifrac_species_significance.qzv \
---p-pairwise
-
 ####################################################
 mkdir alpha_rarefaction
 # NOTA: max_depth es el valor máximo del eje X
