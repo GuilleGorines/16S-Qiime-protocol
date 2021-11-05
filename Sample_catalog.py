@@ -68,8 +68,6 @@ def create(final_groups, truepath):
             os.replace(f"{truepath}/{file1}",f"{targetdir}/{file1}")
             os.replace(f"{truepath}/{file2}",f"{targetdir}/{file2}")
             
-            
-
             outfile.write(f"{final_samplename}\t{targetdir}/{file1}\t{targetdir}/{file2}\n")
        
 R1_files = []
