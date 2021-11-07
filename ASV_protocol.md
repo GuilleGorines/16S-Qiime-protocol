@@ -118,11 +118,10 @@ biom convert \
 
 python process_table.py \
    analysis_with_mitochondria_chloroplast/identification/transposed_table_no_mitochondria_no_cloroplast.tsv \
-   absolute_numbers_taxonomy.tsv 
+   analysis_with_mitochondria_chloroplast/identification/absolute_numbers_taxonomy_no_mitochondria_no_cloroplast.tsv 
 
 ```
-
-
+Once this is done, we can make both of the trees for the sequences (rooted and unrooted)
 
 ```
 mkdir analysis_with_mitochondria_chloroplast/phylogeny_data
@@ -133,9 +132,54 @@ qiime phylogeny align-to-tree-mafft-fasttree \
 --o-masked-alignment analysis_with_mitochondria_chloroplast/phylogeny_data/masked_aligned_rep_seqs.qza \
 --o-tree analysis_with_mitochondria_chloroplast/phylogeny_data/unrooted_tree.qza \
 --o-rooted-tree analysis_with_mitochondria_chloroplast/phylogeny_data/rooted_tree.qza
+```
+
+The next part of the analysis, the diversity data, is difficult to automate, as you need the sampling depth from `dada2_result/feature_table_dada2_summarized.qzv`.
+
+```
+mkdir analysis_with_mitochondria_chloroplast/diversity_data
+
+qiime diversity core-metrics-phylogenetic \
+--i-phylogeny phylogeny_data/rooted_tree.qza \
+--i-table dada2_result/feature_table_dada2.qza \
+--p-sampling-depth $SAMPLING_DEPTH \
+--m-metadata-file $METADATA \
+--output-dir diversity_data
+
+qiime diversity alpha-group-significance \
+--i-alpha-diversity diversity_data/faith_pd_vector.qza \
+--m-metadata-file $METADATA \
+--o-visualization diversity_data/faith_pd_summarized.qzv
+
+qiime diversity alpha-group-significance \
+--i-alpha-diversity diversity_data/shannon_vector.qza \
+--m-metadata-file $METADATA \
+--o-visualization diversity_data/shannon_vector_summarized.qzv
+
+qiime diversity beta-group-significance \
+--i-distance-matrix diversity_data/unweighted_unifrac_distance_matrix.qza \
+--m-metadata-file $METADATA \
+--m-metadata-column group \
+--o-visualization diversity_data/unweighted_unifrac_species_significance.qzv \
+--p-pairwise
 
 ```
 
+
+```
+mkdir alpha_rarefaction
+# NOTA: max_depth es el valor máximo del eje X
+# posibilidad: usar el numero maximo de features encontrado en la summarized table
+
+qiime diversity alpha-rarefaction \
+--i-table dada2_result/feature_table_dada2.qza \
+--i-phylogeny phylogeny_data/rooted_tree.qza \
+--p-max-depth 1009 \
+--m-metadata-file $METADATA \
+--o-visualization alpha_rarefaction/alpha_rarefaction.qzv
+
+
+```
 
 
 
