@@ -113,7 +113,7 @@ qiime tools export \
   --output-path analysis_with_mitochondria_chloroplast/identification/identification.biom
 
 biom convert \
-  --input-fp analysis_with_mitochondria_chloroplast/identification/feature-table.biom \
+  --input-fp analysis_with_mitochondria_chloroplast/identification/identification.biom \
   --output-fp analysis_with_mitochondria_chloroplast/identification/transposed_table_no_mitochondria_no_cloroplast.tsv \
   --to-tsv
 
