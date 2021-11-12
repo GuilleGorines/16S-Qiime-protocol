@@ -187,26 +187,19 @@ qiime diversity alpha-rarefaction \
 ## Removing mitochondria and chloroplast
 
 ```
-mkdir analysis_with_mitochondria_chloroplast
-mkdir analysis_with_mitochondria_chloroplast/identification
-
-
-
-
-```
-
+mkdir analysis_no_mitochondria_chloroplast
+mkdir analysis_no_mitochondria_chloroplast/identification
 
 qiime taxa filter-table \
-  --i-table feature_table_dada2.qza \
-  --i-taxonomy taxonomy.qza \
+  --i-table dada2_result/feature_table_dada2.qza \
+  --i-taxonomy taxonomy/taxonomy.qza \
   --p-exclude mitochondria,chloroplast \
-  --o-filtered-table table-no-mitochondria-no-chloroplast.qza
+  --o-filtered-table dada2_result/feature_table_no_mitochondria_no_chloroplast.qza
 
 qiime metadata tabulate \
   --m-input-file table-no-mitochondria-no-chloroplast.qza \
   --o-visualization table-no-mitochondria-no-chloroplast.qzv
-  
-```
+
 qiime taxa collapse \
   --i-table table-no-mitochondria-no-chloroplast.qza \
   --i-taxonomy taxonomy.qza \
