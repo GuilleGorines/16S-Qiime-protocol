@@ -71,6 +71,7 @@ qiime feature-table tabulate-seqs \
 
 Next step is identifying the sequences. This task will be performed by using the official Naive Bayes Classifier from the Qiime2 website. 
 ```
+mkdir taxonomy
 wget -O ../REFERENCES/bayes-classifier.qza https://data.qiime2.org/2021.2/common/silva-138-99-nb-classifier.qza
 
 qiime feature-classifier classify-sklearn \
