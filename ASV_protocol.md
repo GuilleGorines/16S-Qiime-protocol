@@ -110,10 +110,10 @@ qiime taxa collapse \
 
 qiime tools export \
   --input-path analysis_with_mitochondria_chloroplast/identification/table-no-mitochondria-no-chloroplast_spp_lvl.qza \
-  --output-path analysis_with_mitochondria_chloroplast/identification/identification.biom
+  --output-path analysis_with_mitochondria_chloroplast/identification
 
 biom convert \
-  --input-fp analysis_with_mitochondria_chloroplast/identification/identification.biom \
+  --input-fp analysis_with_mitochondria_chloroplast/identification/feature-table.biom \
   --output-fp analysis_with_mitochondria_chloroplast/identification/transposed_table_no_mitochondria_no_cloroplast.tsv \
   --to-tsv
 
