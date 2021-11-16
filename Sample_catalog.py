@@ -5,6 +5,8 @@ import re
 # Datadir is typically the RAW 
 datadir = sys.argv[1]
 
+# destiny dir is typically ANALYSIS/00-reads
+destiny_dir = sys.argv[2]
 
 def find_longest_match(list_string1,list_string2):
     
@@ -53,39 +55,42 @@ def find_best_match(punctuation_dict):
         
     return final_groups
 
-def create(final_groups, truepath):
-
-    samplesheet = truepath + "/samplesheet.tsv"
+def create(final_groups, destiny_dir):          
     
-    with open(samplesheet,"w") as outfile:
-            
-        outfile.write("sample-id\tforward-absolute-filepath\treverse-absolute-filepath\n")
+    for file1,file2,samplename in final_groups:
+        
+        final_samplename = samplename.replace("_L001_R","")
+        final_samplename = re.sub(r"_S\d{2,3}$","", final_samplename)
+
+        targetdir = os.realpath(destiny_dir) + "/" + final_samplename
+
+        extension_list = [".fastq",".fastq.gz",".fq", ".fq.gz"]
+
+        for extension in extension_list:
+            if file1.endswith(extension) and file2.endswith(extension):
+                file_extension = extension
+                break
+
+        file1_nicename = final_samplename + "_R1" + file_extension 
+        file2_nicename = final_samplename + "_R2" + file_extension 
+
+        os.mkdir(targetdir)
+
+        file1_truepath = os.realpath(datadir + "/" + file1)
+        file2_truepath = os.realpath(datadir + "/" + file2)
+
+        file1_destinypath = targetdir + "/" + file1_nicename
+        file2_destinypath = targetdir + "/" + file2_nicename
+
+        os.symlink(file1_truepath, file1_destinypath)
+        os.symlink(file2_truepath, file2_destinypath)
+
     
-        for file1,file2,samplename in final_groups:
-            
-            final_samplename = samplename.replace("_L001_R","")
-            final_samplename = re.sub(r"_S\d{2,3}$","", final_samplename)
-
-            targetdir = truepath + "/" + final_samplename
-
-            os.mkdir(targetdir)
-
-            file_1_to_be_replaced = truepath + "/" + file1
-            file_1_replacement = targetdir + "/" + file1
-
-            file_2_to_be_replaced = truepath + "/" + file2
-            file_2_replacement = targetdir + "/" + file2
-
-            os.replace(file_1_to_be_replaced, file_1_replacement)
-            os.replace(file_2_to_be_replaced, file_2_replacement)
-            
-            line = final_samplename + "\t" + file_1_replacement + "\t" + file_2_replacement + "\n"
-            outfile.write(line)
-       
 R1_files = []
 R2_files = []
 
 truepath = os.path.realpath(datadir)
+
 
 for item in os.listdir(datadir):
     if "R1" in item:
