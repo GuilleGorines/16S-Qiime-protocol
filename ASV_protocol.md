@@ -85,11 +85,24 @@ qiime metadata tabulate \
 --o-visualization taxonomy/taxonomy.qzv
 ```
 
+Once this is done, we can make both of the trees (rooted and unrooted) for the representative sequences, after creating the directory for it.
+
+```
+mkdir phylogeny_data
+
+qiime phylogeny align-to-tree-mafft-fasttree \
+--i-sequences dada2_result/rep_seqs_dada2.qza \
+--o-alignment phylogeny_data/aligned_rep_seqs.qza \
+--o-masked-alignment phylogeny_data/masked_aligned_rep_seqs.qza \
+--o-tree phylogeny_data/unrooted_tree.qza \
+--o-rooted-tree phylogeny_data/rooted_tree.qza
+```
+
 With the identified sequences, making decisions becomes easier. For instance, mitochondria and chloroplasts from the host might be present, as they all present the 16S gene. Their presence, however, might interfere with 
 
  Here, we will perform the analysis both with and without the mitochondria and chloroplast.
 
-## Without mitochondria and chloroplast removal
+## Mitochondria and chloroplast NOT removed
 
 First step is creating the directories where the files will be stored.
 
@@ -115,33 +128,21 @@ qiime taxa collapse \
   --i-table dada2_result/feature_table_dada2.qza \
   --i-taxonomy taxonomy/taxonomy.qza \
   --p-level 7 \
-  --o-collapsed-table analysis_with_mit_chl/identification/table-no-mitochondria-no-chloroplast_spp_lvl.qza
+  --o-collapsed-table analysis_with_mit_chl/identification/table-with-mitochondria-chloroplast_spp_lvl.qza
 
 qiime tools export \
-  --input-path analysis_with_mit_chl/identification/table-no-mitochondria-no-chloroplast_spp_lvl.qza \
+  --input-path analysis_with_mit_chl/identification/table-with-mitochondria-chloroplast_spp_lvl.qza \
   --output-path analysis_with_mit_chl/identification
 
 biom convert \
   --input-fp analysis_with_mit_chl/identification/feature-table.biom \
-  --output-fp analysis_with_mit_chl/identification/transposed_table_no_mitochondria_no_cloroplast.tsv \
+  --output-fp analysis_with_mit_chl/identification/transposed_table_with_mitochondria_cloroplast.tsv \
   --to-tsv
 
 python process_table.py \
-   analysis_with_mit_chl/identification/transposed_table_no_mitochondria_no_cloroplast.tsv \
-   analysis_with_mit_chl/identification/absolute_numbers_taxonomy_no_mitochondria_no_cloroplast.tsv 
+   analysis_with_mit_chl/identification/transposed_table_with_mitochondria_cloroplast.tsv \
+   analysis_with_mit_chl/identification/absolute_numbers_taxonomy_with_mitochondria_cloroplast.tsv 
 
-```
-Once this is done, we can make both of the trees (rooted and unrooted) for the sequences , after creating the directory for it.
-
-```
-mkdir analysis_with_mit_chl/phylogeny_data
-
-qiime phylogeny align-to-tree-mafft-fasttree \
---i-sequences dada2_result/rep_seqs_dada2.qza \
---o-alignment analysis_with_mit_chl/phylogeny_data/aligned_rep_seqs.qza \
---o-masked-alignment analysis_with_mit_chl/phylogeny_data/masked_aligned_rep_seqs.qza \
---o-tree analysis_with_mit_chl/phylogeny_data/unrooted_tree.qza \
---o-rooted-tree analysis_with_mit_chl/phylogeny_data/rooted_tree.qza
 ```
 
 The next part of the analysis, the diversity data, is difficult to automate, as you need the sampling depth from `dada2_result/feature_table_dada2_summarized.qzv`. In this case, we will save it in the `SAMPLING_DEPTH` variable.
@@ -150,7 +151,7 @@ The next part of the analysis, the diversity data, is difficult to automate, as 
 mkdir analysis_with_mit_chl/diversity_data
 
 qiime diversity core-metrics-phylogenetic \
---i-phylogeny analysis_with_mit_chl/phylogeny_data/rooted_tree.qza \
+--i-phylogeny phylogeny_data/rooted_tree.qza \
 --i-table dada2_result/feature_table_dada2.qza \
 --p-sampling-depth $SAMPLING_DEPTH \
 --m-metadata-file $METADATA \
@@ -175,7 +176,6 @@ qiime diversity beta-group-significance \
 --m-metadata-column $GROUP \
 --o-visualization analysis_with_mit_chl/diversity_data/unweighted_unifrac_species_significance.qzv \
 --p-pairwise
-
 ```
 
 Lastly, the alpha rarefaction can be extracted. However, the max depth parameter, in the variable `MAX_DEPTH`, must be extracted from the `summarized_table.qzv`obtained previously.
@@ -185,7 +185,7 @@ mkdir analysis_with_mit_chl/alpha_rarefaction
 
 qiime diversity alpha-rarefaction \
 --i-table dada2_result/feature_table_dada2.qza \
---i-phylogeny analysis_with_mit_chl/phylogeny_data/rooted_tree.qza \
+--i-phylogeny phylogeny_data/rooted_tree.qza \
 --p-max-depth $MAX_DEPTH \
 --m-metadata-file $METADATA \
 --o-visualization analysis_with_mit_chl/alpha_rarefaction/alpha_rarefaction.qzv
@@ -203,7 +203,7 @@ mkdir analysis_no_mit_chl/feature_table_no_mit_chl
 mkdir analysis_no_mit_chl/identification
 ```
 
-Once created, we generate a new feature table containing all taxids except for mitochondria and chloroplast, and the visualization file for it.
+Once created, we generate a new feature table containing all taxids except for mitochondria and chloroplast, and the visualization files for it.
 
 ```
 qiime taxa filter-table \
@@ -215,10 +215,16 @@ qiime taxa filter-table \
 qiime metadata tabulate \
   --m-input-file analysis_no_mit_chl/feature_table_no_mit_chl/feature_table_no_mitochondria_no_chloroplast.qza \
   --o-visualization analysis_no_mit_chl/feature_table_no_mit_chl/feature_table_no_mitochondria_no_chloroplast.qzv
-```
-As we did when we had the mitochondria and chloroplast, we follow the same steps:
 
-- Create the bar chart with the sample composition (with the newly created, filtered feature table)
+qiime feature-table summarize \
+--i-table analysis_no_mit_chl/feature_table_no_mit_chl/feature_table_no_mitochondria_no_chloroplast.qza \
+--o-visualization analysis_no_mit_chl/feature_table_no_mit_chl/feature_table_no_mitochondria_no_chloroplast_summarized.qzv \
+--m-sample-metadata-file $METADATA
+```
+
+As we did when we had the mitochondria and chloroplast, we follow the same few steps:
+
+- Generate the bar chart with the sample composition (with the newly created, filtered feature table)
 
 ```
 qiime taxa barplot \
@@ -227,24 +233,73 @@ qiime taxa barplot \
 --m-metadata-file $METADATA \
 --o-visualization analysis_no_mit_chl/identification/taxa-bar-plots.qzv
 ```
-
-- 
+- Export the absolute number of features 
 
 ```
 qiime taxa collapse \
   --i-table analysis_no_mit_chl/feature_table_no_mit_chl/feature_table_no_mitochondria_no_chloroplast.qza \
   --i-taxonomy taxonomy/taxonomy.qza \
   --p-level 7 \
-  --o-collapsed-table table-no-mitochondria-no-chloroplast_spp_lvl.qza
+  --o-collapsed-table analysis_no_mit_chl/identification/table-no-mitochondria-no-chloroplast_spp_lvl.qza
 
 qiime tools export \
-  --input-path table-no-mitochondria-no-chloroplast_spp_lvl.qza \
-  --output-path analysis_with_mitochondria_chloroplast/identification/identification.biom
+  --input-path analysis_no_mit_chl/identification/table-no-mitochondria-no-chloroplast_spp_lvl.qza \
+  --output-path analysis_no_mit_chl/identification
 
 biom convert \
---input-fp analysis_with_mitochondria_chloroplast/identification/feature-table.biom \
---output-fp biom.tsv \
+--input-fp analysis_no_mit_chl/identification/feature-table.biom \
+--output-fp analysis_no_mit_chl/identification/transposed_table_no_mitochondria_no_cloroplast.tsv \
 --to-tsv
 
-python process_table.py biom.tsv output.tsv 
+python process_table.py \
+   analysis_no_mit_chl/identification/transposed_table_no_mitochondria_no_cloroplast.tsv \
+   analysis_no_mit_chl/identification/absolute_numbers_taxonomy_no_mitochondria_no_cloroplast.tsv 
+
+```
+- Calculation of diversity data (remember to check the `SAMPLING_DEPTH`, this time from `analysis_no_mit_chl/feature_table_no_mit_chl/feature_table_no_mitochondria_no_chloroplast_summarized.qzv` instead)
+
+```
+mkdir analysis_no_mit_chl/diversity_data
+
+qiime diversity core-metrics-phylogenetic \
+--i-phylogeny phylogeny_data/rooted_tree.qza \
+--i-table dada2_result/feature_table_dada2.qza \
+--p-sampling-depth $SAMPLING_DEPTH \
+--m-metadata-file $METADATA \
+--output-dir analysis_no_mit_chl/diversity_data
+
+qiime diversity alpha-group-significance \
+--i-alpha-diversity analysis_no_mit_chl/diversity_data/faith_pd_vector.qza \
+--m-metadata-file $METADATA \
+--o-visualization analysis_no_mit_chl/diversity_data/faith_pd_summarized.qzv
+
+qiime diversity alpha-group-significance \
+--i-alpha-diversity analysis_not_mit_chl/diversity_data/shannon_vector.qza \
+--m-metadata-file $METADATA \
+--o-visualization analysis_not_mit_chl/diversity_data/shannon_vector_summarized.qzv
+```
+
+- Calculation of beta-diversity data (remember to put a valid metadata column inside of the `GROUP`variable)
+
+```
+qiime diversity beta-group-significance \
+--i-distance-matrix analysis_not_mit_chl/diversity_data/unweighted_unifrac_distance_matrix.qza \
+--m-metadata-file $METADATA \
+--m-metadata-column $GROUP \
+--o-visualization analysis_mpt_mit_chl/diversity_data/unweighted_unifrac_species_significance.qzv \
+--p-pairwise
+```
+
+- Alpha rarefaction calculation (this time, the variable `MAX_DEPTH`, must be extracted from `analysis_no_mit_chl/feature_table_no_mit_chl/feature_table_no_mitochondria_no_chloroplast_summarized.qzv`)
+
+
+```
+mkdir analysis_no_mit_chl/alpha_rarefaction
+
+qiime diversity alpha-rarefaction \
+--i-table analysis_no_mit_chl/feature_table_no_mit_chl/feature_table_no_mitochondria_no_chloroplast.qza \
+--i-phylogeny phylogeny_data/rooted_tree.qza \
+--p-max-depth $MAX_DEPTH \
+--m-metadata-file $METADATA \
+--o-visualization analysis_no_mit_chl/alpha_rarefaction/alpha_rarefaction.qzv
 ```
