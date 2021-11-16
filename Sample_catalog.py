@@ -59,7 +59,7 @@ def create(final_groups, truepath):
     
     with open(samplesheet,"w") as outfile:
             
-       outfile.write("sample-id\tforward-absolute-filepath\treverse-absolute-filepath\n")
+        outfile.write("sample-id\tforward-absolute-filepath\treverse-absolute-filepath\n")
     
         for file1,file2,samplename in final_groups:
             
