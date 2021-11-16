@@ -66,7 +66,7 @@ def create(final_groups, truepath):
             final_samplename = samplename.replace("_L001_R","")
             final_samplename = re.sub(r"_S\d{2,3}$","", final_samplename)
 
-            targetdir = f"{truepath}/{final_samplename}"
+            targetdir = truepath + "/" + final_samplename
 
             os.mkdir(targetdir)
 
