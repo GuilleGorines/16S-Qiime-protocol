@@ -15,7 +15,16 @@ wget -O BIN/sample_catalog.py https://raw.githubusercontent.com/GuilleGorines/16
 wget -O BIN/fastqc_directories.sh  https://raw.githubusercontent.com/GuilleGorines/16S-Qiime-protocol/main/fastqc_directories.sh
 wget -O BIN/process_table.py https://raw.githubusercontent.com/GuilleGorines/16S-Qiime-protocol/main/process_table.py
 ```
-Once that is done, place your reads inside the `RAW` directory, and execute
+Once that is done, place your reads inside the `RAW` directory, and execute the following from this very directory
+
+```
+python BIN/sample_catalog.py RAW
+
+```
+
+
+
+
 
 First step for Qiime2 is to import the sequence that will be used. A visual file (this is, with  _.qzv_ extension and displayable through `qiime2 tools view` or in https://view.qiime2.org/) will be created as well.
 
