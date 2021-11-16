@@ -15,11 +15,18 @@ wget -O BIN/sample_catalog.py https://raw.githubusercontent.com/GuilleGorines/16
 wget -O BIN/fastqc_directories.sh  https://raw.githubusercontent.com/GuilleGorines/16S-Qiime-protocol/main/fastqc_directories.sh
 wget -O BIN/process_table.py https://raw.githubusercontent.com/GuilleGorines/16S-Qiime-protocol/main/process_table.py
 ```
-Once that is done, place your reads inside the `RAW` directory, and execute the following from this very directory
+
+Once that is done, place your reads inside the `RAW` directory, go back to the `ANALYSIS` directory:
 
 ```
-python BIN/sample_catalog.py RAW
+cd ANALYSIS
+```
+Then, execute the following
 
+```
+mkdir 00-reads
+python3 ../BIN/sample_catalog.py ../RAW 00-reads
+bash ../BIN/
 ```
 
 
