@@ -62,7 +62,7 @@ def create(final_groups, destiny_dir):
         final_samplename = samplename.replace("_L001_R","")
         final_samplename = re.sub(r"_S\d{2,3}$","", final_samplename)
 
-        targetdir = os.realpath(destiny_dir) + "/" + final_samplename
+        targetdir = os.path.realpath(destiny_dir) + "/" + final_samplename
 
         extension_list = [".fastq",".fastq.gz",".fq", ".fq.gz"]
 
@@ -76,8 +76,8 @@ def create(final_groups, destiny_dir):
 
         os.mkdir(targetdir)
 
-        file1_truepath = os.realpath(datadir + "/" + file1)
-        file2_truepath = os.realpath(datadir + "/" + file2)
+        file1_truepath = os.path.realpath(datadir + "/" + file1)
+        file2_truepath = os.path.realpath(datadir + "/" + file2)
 
         file1_destinypath = targetdir + "/" + file1_nicename
         file2_destinypath = targetdir + "/" + file2_nicename
