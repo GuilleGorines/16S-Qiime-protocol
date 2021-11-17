@@ -26,7 +26,7 @@ Then, execute the following
 ```
 mkdir 00-reads
 python3 ../BIN/sample_catalog.py ../RAW 00-reads
-bash ../BIN/
+bash ../BIN/fastqc_directories.sh 00-reads
 ```
 
 
