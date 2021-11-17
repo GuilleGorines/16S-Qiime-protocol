@@ -36,6 +36,7 @@ bash ../BIN/fastqc_directories.sh 00-reads
 First step for Qiime2 is to import the sequence that will be used. A visual file (this is, with  _.qzv_ extension and displayable through `qiime2 tools view` or in https://view.qiime2.org/) will be created as well.
 
 ```
+mkdir 02-qiime2 && cd $_
 mkdir importsequences
 
 qiime tools import \
