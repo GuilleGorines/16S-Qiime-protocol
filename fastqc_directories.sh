@@ -42,7 +42,9 @@ do
     samplename=$(basename $directory)
     
     # make the directories for the quality results: pre-trimming, fastp, post-trimming
-    mkdir -p ../RESULTS/Quality_control/${samplename}_quality/{fastqc_pre-trimming_reports,fastp_reports,fastqc_post-trimming}
+    mkdir -p ../RESULTS/Quality_control/${samplename}_quality/fastqc_pre-trimming_reports
+    mkdir -p ../RESULTS/Quality_control/${samplename}_quality/fastp_reports
+    mkdir -p ../RESULTS/Quality_control/${samplename}_quality/fastqc_post-trimming
 
 
     fastqc -o ../RESULTS/Quality_control/${samplename}_quality/fastqc_pre-trimming_reports $directory/*.gz
