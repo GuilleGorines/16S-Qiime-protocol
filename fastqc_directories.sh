@@ -73,7 +73,8 @@ done
 
 echo "Launching MultiQC"
 
-multiqc ../RESULTS/*/*/* -outdir ../RESULTS/multiqc_result
+mkdir ../RESULTS/multiqc_results
+multiqc ../RESULTS/*/*/* -o ../RESULTS/multiqc_results
 
 echo "MultiQC ended"
 # Ready to launch multiqc on RESULTS (use the correct environment for it)
