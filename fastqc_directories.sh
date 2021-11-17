@@ -56,8 +56,8 @@ do
     --length_required 250 \
     --qualified_quality_phred 30 \
     --cut_window_size 4 \
-    --html  ../RESULTS/Quality_control/${samplename}_quality/fastp_reports/${samplename}_trim_report_fastp.html \
-    --json  ../RESULTS/Quality_control/${samplename}_quality/fastp_reports/${samplename}_trim_report_fastp.json \
+    --html ../RESULTS/Quality_control/${samplename}_quality/fastp_reports/${samplename}_trim_report_fastp.html \
+    --json ../RESULTS/Quality_control/${samplename}_quality/fastp_reports/${samplename}_trim_report_fastp.json \
     -o 01-quality_control/${samplename}/${samplename}_trimmed_R1.fq.gz \
     -O 01-quality_control/${samplename}/${samplename}_trimmed_R2.fq.gz
 
@@ -74,6 +74,7 @@ done
 
 echo "Launching MultiQC"
 
+multiqc ../RESULTS/*/*/* -outdir ../RESULTS/multiqc_result
 
 echo "MultiQC ended"
 # Ready to launch multiqc on RESULTS (use the correct environment for it)
