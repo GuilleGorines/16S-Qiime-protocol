@@ -42,7 +42,7 @@ do
     samplename=$(basename $directory)
     
     # make the directories for the quality results: pre-trimming, fastp, post-trimming
-    mkdir -p ../RESULTS/Quality_control/${samplename}_quality/{fastqc_pre-trimming_reports, fastp_reports, fastqc_post-trimming}
+    mkdir -p ../RESULTS/Quality_control/${samplename}_quality/{fastqc_pre-trimming_reports,fastp_reports,fastqc_post-trimming}
 
 
     fastqc -o ../RESULTS/Quality_control/${samplename}_quality/fastqc_pre-trimming_reports $directory/*.gz
@@ -63,7 +63,7 @@ do
     -O 01-quality_control/${samplename}/${samplename}_trimmed_R2.fq.gz
 
     # second quality analysis
-    fastqc -o /RESULTS/${samplename}_quality/fastqc_post-trimming 01-quality_control/${samplename}/*_trimmed_*
+    fastqc -o ../RESULTS/${samplename}_quality/fastqc_post-trimming 01-quality_control/${samplename}/*_trimmed_*
     
     # add the data to the sample manifest
     printf "${samplename}\t${absolute_filepath}/01-quality_control/${samplename}/${samplename}_trimmed_R1.fq.gz\t${absolute_filepath}/01-quality_control/${samplename}/${samplename}_trimmed_R2.fq.gz\n" >> manifest.tsv
