@@ -21,7 +21,7 @@ then
     mkdir ../RESULTS/Quality_control
     echo "Created RESULTS and RESULTS/Quality_control directories."
 else
-    if [ ! -d ../RESULTS/Quality_control]
+    if [ ! -d ../RESULTS/Quality_control ]
     then
         mkdir ../RESULTS/Quality_control
         echo "Created RESULTS/Quality_control directory."
@@ -32,21 +32,22 @@ fi
 
 printf "sample-id\tforward-absolute-filepath\treverse-absolute-filepath\n" > manifest.tsv
 
-absolute_filepath = $(pwd)
+absolute_filepath=$(pwd)
 
 for directory in $DIRECTORY/*/
 do
     echo "Starting ${directory} quality control."
+    
     # samplename = dirname
     samplename=$(basename $directory)
     
-    # make the directoryfirst quality result
-    mkdir ../RESULTS/Quality_control/${samplename}_quality/fastqc_pre-trimming_reports
+    # make the directories for the quality results: pre-trimming, fastp, post-trimming
+    mkdir -p ../RESULTS/Quality_control/${samplename}_quality/{fastqc_pre-trimming_reports, fastp_reports, fastqc_post-trimming}
+
+
     fastqc -o ../RESULTS/Quality_control/${samplename}_quality/fastqc_pre-trimming_reports $directory/*.gz
-       
-    # make the directories where the quality control reports 
-    # and the trimmed reads will be stored, and perform trimming
-    mkdir ../RESULTS/Quality_control/${samplename}_quality/fastp_reports
+    
+    # make the directory for trimmed sequences
     mkdir 01-quality_control/${samplename}
 
     fastp -i $directory/*R1* -I $directory/*R2* \
@@ -62,11 +63,9 @@ do
     -O 01-quality_control/${samplename}/${samplename}_trimmed_R2.fq.gz
 
     # second quality analysis
-    mkdir ../RESULTS/Quality_control/${samplename}_quality/fastqc_post-trimming
     fastqc -o /RESULTS/${samplename}_quality/fastqc_post-trimming 01-quality_control/${samplename}/*_trimmed_*
     
     # add the data to the sample manifest
-
     printf "${samplename}\t${absolute_filepath}/01-quality_control/${samplename}/${samplename}_trimmed_R1.fq.gz\t${absolute_filepath}/01-quality_control/${samplename}/${samplename}_trimmed_R2.fq.gz\n" >> manifest.tsv
     echo "${directory} quality control finished."
 
