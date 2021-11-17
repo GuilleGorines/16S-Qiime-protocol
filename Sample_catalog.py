@@ -89,7 +89,7 @@ def create(final_groups, destiny_dir):
 R1_files = []
 R2_files = []
 
-truepath = os.path.realpath(datadir)
+truepath = os.path.realpath(destiny_dir)
 
 
 for item in os.listdir(datadir):
