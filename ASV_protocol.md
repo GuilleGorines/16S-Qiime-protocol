@@ -21,7 +21,13 @@ Once that is done, place your reads inside the `RAW` directory, go back to the `
 ```
 cd ANALYSIS
 ```
-Then, execute the following
+Then, activate the quality control environment
+
+```
+conda activate quality_control
+```
+
+And execute the following
 
 ```
 mkdir 00-reads
@@ -29,9 +35,10 @@ python3 ../BIN/sample_catalog.py ../RAW 00-reads
 bash ../BIN/fastqc_directories.sh 00-reads
 ```
 
-
-
-
+Activate the qiime2 environment
+```
+conda activate qiime2021.2
+```
 
 First step for Qiime2 is to import the sequence that will be used. A visual file (this is, with  _.qzv_ extension and displayable through `qiime2 tools view` or in https://view.qiime2.org/) will be created as well.
 
