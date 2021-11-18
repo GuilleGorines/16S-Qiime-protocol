@@ -97,10 +97,10 @@ qiime feature-table tabulate-seqs \
 Next step is identifying the sequences. This task will be performed by using the official Naive Bayes Classifier from the Qiime2 website. 
 ```
 mkdir taxonomy
-wget -O ../REFERENCES/bayes-classifier.qza https://data.qiime2.org/2021.2/common/silva-138-99-nb-classifier.qza
+wget -O ../../REFERENCES/bayes-classifier.qza https://data.qiime2.org/2021.2/common/silva-138-99-nb-classifier.qza
 
 qiime feature-classifier classify-sklearn \
---i-classifier ../REFERENCES/bayes-classifier.qza \
+--i-classifier ../../REFERENCES/bayes-classifier.qza \
 --i-reads dada2_result/rep_seqs_dada2.qza \
 --o-classification taxonomy/taxonomy.qza
 
@@ -286,7 +286,7 @@ biom convert \
 --output-fp analysis_no_mit_chl/identification/transposed_table_no_mitochondria_no_cloroplast.tsv \
 --to-tsv
 
-python process_table.py \
+python ../../BIN/process_table.py \
    analysis_no_mit_chl/identification/transposed_table_no_mitochondria_no_cloroplast.tsv \
    analysis_no_mit_chl/identification/absolute_numbers_taxonomy_no_mitochondria_no_cloroplast.tsv 
 ```
