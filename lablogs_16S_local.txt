@@ -61,7 +61,7 @@ cat ../samples_id.txt | xargs -I % echo "mkdir %;  fastp -i ../02-cutadapt_remov
 # 04-fastQC_posterior
 # fastQC to asses the trimmed reads quality	
 # conda activate quality_control
-cat ../samples_id.txt | xargs -I % echo "mkdir %;  fastqc -o % ../03-preprocessing_fastp/%/%_*_filtered.fq.gz" > _03_fastqc_post_trimming.sh
+cat ../samples_id.txt | xargs -I % echo "mkdir %;  fastqc -o % ../03-preprocessing_fastp/%/%_*_filtered.fq.gz" > _01_fastqc_post_trimming.sh
 
 # 05-qiime2_import
 # Import the sequences in the manifest into a qiime2 object
