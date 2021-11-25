@@ -1,0 +1,130 @@
+
+# ANALYSIS
+mkdir -p 00-reads
+mkdir -p $(date '+%Y%m%d')_ANALYSIS01_16S
+ls ../RAW/*.gz | cut -d "/" -f3 | cut -d "_" -f1 | sort -u > samples_id.txt
+cd 00-reads; cat ../samples_id.txt | xargs -I % echo "ln -s ../../RAW/%_*R1*.fastq.gz %_R1.fastq.gz" | bash;
+cat ../samples_id.txt | xargs -I % echo "ln -s ../../RAW/%_*R2*.fastq.gz %_R2.fastq.gz" | bash; cd -
+
+#ANALYSIS01_16S
+mkdir 01-preprocessing
+mkdir 02-QIIME2
+ln -s ../00-reads .
+ln -s ../samples_id.txt .
+
+# 01-preprocessing
+# conda activate quality_control
+cat ../samples_id.txt | xargs -I % echo "mkdir -p ../../../RESULTS/Quality_control/%/pre-trimming-quality; qsub -V -b y -j y -cwd -N FastQC_1.% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 fastqc -o ../../../RESULTS/Quality_control/%/pre-trimming-quality ../00-reads/%*.fastq.gz" > _01_fastqc_pre_trimming.sh
+cat ../samples_id.txt | xargs -I % echo "mkdir -p ../../../RESULTS/Quality_control/%/trimming-stats; mkdir %; qsub -V -b y -j y -cwd -N FastP.% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 fastp -i ../00-reads/%_R1.fastq.gz -I ../00-reads/%_R2.fastq.gz --trim_poly_x --cut_front --cut_tail --cut_mean_quality 20 --length_required 250 --qualified_quality_phred 30 --cut_window_size 4 --html ../../../RESULTS/Quality_control/%/trimming-stats/%_trim_report_fastp.html --json ../../../RESULTS/Quality_control/%/trimming-stats/%_trim_report_fastp.json -o %/%_R1_filtered.fq.gz -O %/%_R2_filtered.fq.gz" > _02_fastp.sh
+cat ../samples_id.txt | xargs -I % echo "mkdir -p ../../../RESULTS/Quality_control/%/post-trimming-quality; qsub -V -b y -j y -cwd -N FastQC_2.% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 fastqc -o ../../../RESULTS/Quality_control/%/post-trimming-quality %/%_*_filtered.fq.gz" > _03_fastqc_post_trimming.sh
+echo "printf \"sample-id\tforward-absolute-filepath\treverse-absolute-filepath\n\" > ../manifest.tsv; cat ../samples_id.txt | xargs -I % printf \"%\t$(pwd)/%/%_R1_filtered.fq.gz\t$(pwd)/%/%_R2_filtered.fq.gz\n\" >> ../manifest.tsv" > _04_create_manifest.sh
+echo "mkdir -p ../../../RESULTS/multiqc; qsub -V -b y -j y -cwd -N MULTIQC -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 multiqc ../../../RESULTS/*/*/* -o ../../../RESULTS/multiqc" > _05_multiqc.sh 
+
+# 02-QIIME2
+ln -s ../manifest.tsv .
+ln -s ../../metadata.tsv .
+
+mkdir 01-importsequences
+mkdir 02-dada2
+mkdir 03-taxonomy
+mkdir 04-analysis_with_mit_chl
+mkdir 05-analysis_no_mit_chl
+
+# 02-QIIME2/01-importsequences
+# conda activate qiime2021.2
+echo "qsub -V -b y -j y -cwd -N Q2_IMPORT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime tools import --type \"SampleData[PairedEndSequencesWithQuality]\" --input-path ../manifest.tsv --output-path paired-end-demux.qza --input-format PairedEndFastqManifestPhred33V2" > _01_qiime2_import.sh
+echo "qsub -V -b y -j y -cwd -N Q2_IMPORT_qzv -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime demux summarize --i-data ./paired-end-demux.qza --o-visualization paired-end-demux.qzv" > _02_qiime2_import_visualfile.sh
+
+# 02-QIIME2/02-dada2
+# conda activate qiime2021.2
+echo "qsub -V -b y -j y -cwd -N Q2_DADA2 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime dada2 denoise-paired --i-demultiplexed-seqs ../01-importsequences/paired-end-demux.qza --p-trunc-len-f 0 --p-trunc-len-r 0 --p-n-threads 0 --o-representative-sequences rep_seqs_full.qza --o-table feature_table_full.qza --o-denoising-stats stats_dada2.qza" > _01_qiime2_dada2.sh
+echo "qsub -V -b y -j y -cwd -N Q2_DADA2_REPSEQS_qzv -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime metadata tabulate --m-input-file rep_seqs_full.qza --o-visualization rep_seqs_full.qzv" > _02_qiime2_dada2_visualfiles.sh
+echo "qsub -V -b y -j y -cwd -N Q2_DADA2_STATS_qzv -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime metadata tabulate --m-input-file stats_dada2.qza --o-visualization stats_dada2.qzv" >> _02_qiime2_dada2_visualfiles.sh
+echo "qsub -V -b y -j y -cwd -N Q2_DADA2_TABLE_qzv -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime metadata tabulate --m-input-file feature_table_full.qza --o-visualization feature_table_full.qzv" >> _02_qiime2_dada2_visualfiles.sh
+echo "qsub -V -b y -j y -cwd -N Q2_DADA2_SUMTABLE_qzv -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime feature-table summarize --i-table feature_table_full.qza --o-visualization feature_table_full.qza_summarized.qzv --m-sample-metadata-file ../metadata.tsv" >> _02_qiime2_dada2_visualfiles.sh
+echo "qsub -V -b y -j y -cwd -N Q2_DADA2_TAB_SEQS_qzv -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime feature-table tabulate-seqs --i-data rep_seqs_full.qza --o-visualization feature_table_tabulated_seqs.qzv" >> _02_qiime2_dada2_visualfiles.sh
+
+# 02-QIIME2/03-taxonomy
+# conda activate qiime2021.2
+ /data/bi/references/QIIME2/2021.2_bayes_silva.qza bayes_classifier.qza
+echo "qsub -V -b y -j y -cwd -N Q2_IDENTIFICATION -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime feature-classifier classify-sklearn --i-classifier bayes-classifier.qza --i-reads ../02-dada2/rep_seqs_full.qza --o-classification taxonomy.qza" > _01_qiime2_taxonomic_identification.sh
+echo "qsub -V -b y -j y -cwd -N Q2_IDENTIFICATION_qzv -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime metadata tabulate --m-input-file taxonomy.qza --o-visualization taxonomy.qzv" > _02_qiime2_taxonomic_visual.sh
+
+# 02-QIIME2/04-analysis_with_mit_chl
+mkdir 01-taxa_barplots
+mkdir 02-absolute_numbers_taxonomy
+mkdir 03-phylogeny
+mkdir 04-diversity
+mkdir 05-rarefaction
+
+# 02-QIIME2/04-analysis_with_mit_chl/01-taxa_barplots
+# conda activate qiime2021.2
+echo "qsub -V -b y -j y -cwd -N Q2_TAXBARPLOTS_FULL_qzv -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime taxa barplot --i-table ../../02-dada2/feature_table_full.qza --i-taxonomy ../../03-taxonomy/taxonomy.qza --m-metadata-file ../../metadata.tsv --o-visualization taxa-bar-plots.qzv" > _01_qiime2_taxa_barplots_full.sh
+
+# 02-QIIME2/04-analysis_with_mit_chl/02-absolute_numbers_taxonomy
+# conda activate qiime2021.2
+ln -s /data/bi/pipelines/16S-Qiime-protocol/process_table.py  process_table.py
+echo "qsub -V -b y -j y -cwd -N Q2_COLLAPSE_FULL_TABLE -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime taxa collapse --i-table ../../02-dada2/feature_table_full.qza --i-taxonomy ../../03-taxonomy/taxonomy.qza --p-level 7 --o-collapsed-table collapsed_full_table_lvl_7.qza" > _01_qiime2_collapse_table.sh
+echo "qsub -V -b y -j y -cwd -N Q2_EXPORT_FULL_BIOM -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime tools export --input-path collapsed_full_table_lvl_7.qza --output-path ." > _02_qiime2_export_biom_table.sh
+echo "qsub -V -b y -j y -cwd -N Q2_FULL_BIOM_TO_TSV -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 biom convert --input-fp ./feature-table.biom --output-fp transposed_full_table.tsv --to-tsv" > _03_qiime2_biom_to_tsv.sh
+echo "qsub -V -b y -j y -cwd -N PY_TRANSPOSE_FULL_TSV -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python process_table.py transposed_full_table.tsv absolute_numbers_taxonomy.tsv" > _04_python_transpose_tsv.sh
+
+# 02-QIIME2/04-analysis_with_mit_chl/03-phylogeny
+# conda activate qiime2021.2
+echo "qsub -V -b y -j y -cwd -N Q2_PHYLOGENY_FULL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime phylogeny align-to-tree-mafft-fasttree --i-sequences ../../02-dada2/rep_seqs_full.qza --o-alignment aligned_rep_seqs.qza --o-masked-alignment masked_aligned_rep_seqs.qza --o-tree unrooted_tree.qza --o-rooted-tree rooted_tree.qza" > _01_qiime2_align.sh
+
+# 02-QIIME2/04-analysis_with_mit_chl/04-diversity
+# conda activate qiime2021.2
+# Must be provided with a number for the sampling depth. Value is extracted from the summarized table
+echo "qsub -V -b y -j y -cwd -N Q2_DIVERSITY_FULL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity core-metrics-phylogenetic --i-phylogeny ../03-phylogeny/rooted_tree.qza --i-table ../../02-dada2/feature_table_full.qza --p-sampling-depth $1 --m-metadata-file ../../metadata.tsv --output-dir ." > _01_qiime2_alpha_diversity_full.sh
+echo "qsub -V -b y -j y -cwd -N Q2_FAITH_FULL_qzv -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity alpha-group-significance --i-alpha-diversity faith_pd_vector.qza --m-metadata-file ../../metadata.tsv --o-visualization faith_pd_summarized.qzv" >  _02_qiime2_faith_shannon.sh
+echo "qsub -V -b y -j y -cwd -N Q2_SHANNON_FULL_qzv -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity alpha-group-significance --i-alpha-diversity shannon_vector.qza --m-metadata-file ../../metadata.tsv --o-visualization shannon_vector_summarized.qzv" >> _02_qiime2_faith_shannon.sh
+
+# 02-QIIME2/04-analysis_with_mit_chl/05-rarefaction
+# conda activate qiime2021.2
+# Must be provided with a number for max-depth, extracted from summarized table 
+echo "qsub -V -b y -j y -cwd -N Q2_RAREFACTION_FULL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity alpha-rarefaction --i-table ../02-dada2/feature_table_full.qza --i-phylogeny ../03-phylogeny/rooted_tree.qza --p-max-depth $1 --m-metadata-file ../../metadata.tsv --o-visualization alpha_rarefaction.qzv" > _01_qiime2_alpha_rarefaction.sh
+
+# 02-QIIME2/05-analysis_no_mit_chl
+mkdir 01-filtering
+mkdir 02-taxa_barplots_filtered
+mkdir 03-absolute_numbers_taxonomy_filtered
+mkdir 04-phylogeny_filtered
+mkdir 05-diversity_filtered
+mkdir 06-rarefaction_filtered
+
+# 02-QIIME2/05-analysis_no_mit_chl/01-filtering
+# conda activate qiime2021.2
+echo "qsub -V -b y -j y -cwd -N Q2_FILTER_TABLE -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime taxa filter-table --i-table ../02-dada2/feature_table_full.qza --i-taxonomy ../../03-taxonomy/taxonomy.qza --p-exclude mitochondria,chloroplast --o-filtered-table feature_table_filtered.qza" > _01_qiime2_filter_table_repseqs.sh
+echo "qsub -V -b y -j y -cwd -N Q2_FILTER_REPSEQS -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime taxa filter-seqs --i-sequences ../02-dada2/rep_seqs_full.qza --i-taxonomy ../../03-taxonomy/taxonomy.qza --p-exclude mitochondria,chloroplast --o-filtered-sequences rep_seqs_filtered.qza" >> _01_qiime2_filter_table_repseqs.sh
+echo "qsub -V -b y -j y -cwd -N Q2_FILTER_TABLE_qzv -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime metadata tabulate --m-input-file feature_table_filtered.qza --o-visualization feature_table_filtered.qzv" > _02_qiime2_filtered_visualfiles.sh
+echo "qsub -V -b y -j y -cwd -N Q2_SUMMARIZE_FILTER_TABLE_qzv -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime feature-table summarize --i-table feature_table_filtered.qza --o-visualization feature_table_filtered.qzv --m-sample-metadata-file ../../metadata.tsv" >> _02_qiime2_filtered_visualfiles.sh
+echo "qsub -V -b y -j y -cwd -N Q2_TABULATE_FILTERED_SEQS_qzv -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime feature-table tabulate-seqs --i-data rep_seqs_filtered.qza --o-visualization rep_seqs_filtered.qzv" >> _02_qiime2_filtered_visualfiles.sh
+
+# 02-QIIME2/05-analysis_no_mit_chl/02-taxa_barplots_filtered
+# conda activate qiime2021.2
+echo "qsub -V -b y -j y -cwd -N FILTERED_TAXA_BARPLOTS -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime taxa barplot --i-table ../01-filtering/feature_table_filtered.qza --i-taxonomy ../../03-taxonomy/taxonomy.qza --m-metadata-file ../../metadata.tsv --o-visualization filtered_taxa_barplots.qzv" > _01_qiime2_filter_taxa_barplots.sh
+
+# 02-QIIME2/05-analysis_no_mit_chl/03-absolute_numbers_taxonomy_filtered
+# conda activate qiime2021.2
+ln -s /data/bi/pipelines/16S-Qiime-protocol/process_table.py  process_table.py
+echo "qsub -V -b y -j y -cwd -N Q2_COLLAPSE_FILTERED_TABLE -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime taxa collapse --i-table ../01-filtering/feature_table_filtered.qza --i-taxonomy ../../03-taxonomy/taxonomy.qza --p-level 7 --o-collapsed-table collapsed_filtered_table_lvl_7.qza" > _01_qiime2_collapse_filtered_table.sh
+echo "qsub -V -b y -j y -cwd -N Q2_EXPORT_FILTERED_BIOM -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime tools export --input-path collapsed_filtered_table_lvl_7.qza --output-path ." > _02_qiime2_export_biom_filtered_table.sh
+echo "qsub -V -b y -j y -cwd -N Q2_FILTERED_BIOM_TO_TSV -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 biom convert --input-fp feature-table.biom --output-fp transposed_filtered_table.tsv --to-tsv" > _03_qiime2_biom_to_tsv.sh
+echo "qsub -V -b y -j y -cwd -N PY_TRANSPOSE_FILTERED_TSV -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python process_table.py transposed_filtered_table.tsv absolute_numbers_taxonomy_filtered.tsv" >  _04_python_transpose_tsv.sh
+
+# 02-QIIME2/05-analysis_no_mit_chl/04-phylogeny_filtered
+# conda activate qiime2021.2
+echo "qsub -V -b y -j y -cwd -N Q2_PHYLOGENY_FILTERED -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime phylogeny align-to-tree-mafft-fasttree --i-sequences ../01-filering/rep_seqs_filtered.qza --o-alignment aligned_filtered_rep_seqs.qza --o-masked-alignment masked_aligned_filtered_rep_seqs.qza --o-tree unrooted_tree_filtered.qza --o-rooted-tree rooted_tree_filtered.qza" > _01_qiime2_align_filtered.sh
+
+# 02-QIIME2/05-analysis_no_mit_chl/05-diversity_filtered
+# conda activate qiime2021.2
+# Must be provided with a number for the sampling depth. Value is extracted from the summarized table
+echo "qsub -V -b y -j y -cwd -N Q2_DIVERSITY_FILTERED -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity core-metrics-phylogenetic --i-phylogeny ../04-phylogeny_filtered/rooted_tree_filtered.qza --i-table ../01-filtering/feature_table_filtered.qza --p-sampling-depth $1 --m-metadata-file ../../metadata.tsv --output-dir ." > _01_qiime2_alpha_diversity_filtered.sh
+echo "qsub -V -b y -j y -cwd -N Q2_FAITH_FILTERED_qzv -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity alpha-group-significance --i-alpha-diversity faith_pd_vector.qza --m-metadata-file ../../metadata.tsv --o-visualization faith_pd_summarized_filtered.qzv" > _02_qiime2_faith_shannon_filtered.sh
+echo "qsub -V -b y -j y -cwd -N Q2_SHANNON_FILTERED_qzv -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity alpha-group-significance --i-alpha-diversity shannon_vector.qza --m-metadata-file ../../metadata.tsv --o-visualization shannon_vector_summarized_filtered.qzv" >> _02_qiime2_faith_shannon_filtered.sh
+
+# 02-QIIME2/05-analysis_no_mit_chl/06-rarefaction_filtered
+# conda activate qiime2021.2
+# Must be provided with a number for max-depth, extracted from summarized table 
+echo "qsub -V -b y -j y -cwd -N NAME -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity alpha-rarefaction --i-table ../01-filtering/feature_table_filtered.qza --i-phylogeny ../04-phylogeny_filtered/rooted_tree_filtered.qza --p-max-depth $1 --m-metadata-file ../../metadata.tsv --o-visualization alpha_rarefaction_filtered.qzv" > _01_qiime_alpha_rarefaction_filtered.sh
