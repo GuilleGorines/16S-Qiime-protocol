@@ -85,7 +85,7 @@ echo "qsub -V -b y -j y -cwd -N Q2_TAB_REPSEQS_VISUAL -q all.q@obelix09,all.q@ob
 # Use the previously-trained Naive Bayes classifier to identify the rep seqs
 # Generate the visual files for the created objects: taxonomy
 # conda activate qiime2021.2
-echo "qsub -V -b y -j y -cwd -N Q2_IDENTIFICATE -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime feature-classifier classify-sklearn --i-classifier /data/bi/references/QIIME2/2021.2_bayes_silva.qza bayes_classifier.qza --i-reads ../06-qiime2_denoise_cluster/rep_seqs_full.qza --o-classification taxonomy.qza" > _01_qiime2_taxonomic_identification.sh
+echo "qsub -V -b y -j y -cwd -N Q2_IDENTIFICATE -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime feature-classifier classify-sklearn --i-classifier /data/bi/references/QIIME2/2021.2_bayes_silva.qza --i-reads ../06-qiime2_denoise_cluster/rep_seqs_full.qza --o-classification taxonomy.qza" > _01_qiime2_taxonomic_identification.sh
 echo "qsub -V -b y -j y -cwd -N Q2_TAX_VISUAL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime metadata tabulate --m-input-file taxonomy.qza --o-visualization taxonomy.qzv" > _02_qiime2_taxonomic_visual.sh
 
 # 08-qiime2_filt_mit_chl
