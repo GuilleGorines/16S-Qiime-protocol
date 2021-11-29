@@ -9,7 +9,7 @@ ls ../RAW/*.gz | cut -d "/" -f3 | cut -d "_" -f1 | sort -u > samples_id.txt
 mkdir -p 00-reads
 cd 00-reads; cat ../samples_id.txt | xargs -I % echo "ln -s ../../RAW/%_*R1*.fastq.gz %_R1.fastq.gz" | bash;
 cat ../samples_id.txt | xargs -I % echo "ln -s ../../RAW/%_*R2*.fastq.gz %_R2.fastq.gz" | bash; cd -
-echo "printf \"sample-id\tforward-absolute-filepath\treverse-absolute-filepath\n" > manifest.tsv
+printf "sample-id\tforward-absolute-filepath\treverse-absolute-filepath\n" > manifest.tsv
 cat samples_id.txt | xargs -I % printf "%\t$(pwd)/$(date '+%Y%m%d')_ANALYSIS01_16S/03-fastp_preprocess/%/%_R1_filtered.fq.gz\t$(pwd)/$(date '+%Y%m%d')_ANALYSIS01_16S/03-fastp_preprocess/%/%_R2_filtered.fq.gz\n" >> manifest.tsv 
 
 # ANALYSIS01_16S
@@ -51,7 +51,7 @@ cat ../samples_id.txt | xargs -I % echo "mkdir %; qsub -V -b y -j y -cwd -N PRE_
 # 02-cutadapt_remove_primers
 # cutadapt to remove the sequencing primers
 # conda activate quality_control
-cat ../samples_id.txt | xargs -I % echo "mkdir %; qsub -V -b y -j y -cwd -N CUTADPT_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 cutadapt -a {ADAPTER_R1} -A {ADAPTER_R2} --json %/%.cutadapt.json -o %/%_adapter_removed_R1.fastq.gz -p %/%_adapter_removed_R2.fastq.gz " > _01_cutadapt.sh
+cat ../samples_id.txt | xargs -I % echo "mkdir %; qsub -V -b y -j y -cwd -N CUTADPT_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 cutadapt -a {ADAPTER_R1} -A {ADAPTER_R2} --json %/%.cutadapt.json -o %/%_adapter_removed_R1.fastq.gz -p %/%_adapter_removed_R2.fastq.gz ../00-reads/%_R1.fastq.gz ../00-reads/%_R2.fastq.gz" > _01_cutadapt.sh
 
 # 03-preprocessing_fastp
 # fastp to trim the raw sequences and improve quality
