@@ -170,4 +170,4 @@ echo "qsub -V -b y -j y -cwd -N RAREFACTION_FILT -q all.q@obelix09,all.q@obelix1
 
 # 99-stats
 # multiQC to assess the general quality of the reads
-echo "qsub -V -b y -j y -cwd -N MULTIQC -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 multiqc ../01-fastQC_previous/*/* ../02-cutadapt_remove_primers/*/* ../03-fastp_preprocess/*/* ../04-fastQC_posterior/*/* -o ." > _05_multiqc.sh 
+echo "qsub -V -b y -j y -cwd -N MULTIQC -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 multiqc ../01-fastQC_previous/*/* ../02-cutadapt_remove_primers/*/* ../03-fastp_preprocess/*/* ../04-fastQC_posterior/*/* -o ." > _01_multiqc.sh 
