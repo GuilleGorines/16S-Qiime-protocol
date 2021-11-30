@@ -42,6 +42,7 @@ mkdir 99-stats
 ln -s ../00-reads .
 ln -s ../samples_id.txt .
 ln -s ../manifest.tsv .
+ln -s ../metadata.tsv
 
 # 01-fastQC_previous
 # fastQC to assess the raw reads quality

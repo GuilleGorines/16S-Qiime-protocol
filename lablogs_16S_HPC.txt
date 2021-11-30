@@ -42,6 +42,8 @@ mkdir 99-stats
 ln -s ../00-reads .
 ln -s ../samples_id.txt .
 ln -s ../manifest.tsv .
+ln -s ../metadata.tsv .
+
 
 # 01-fastQC_previous
 # fastQC to assess the raw reads quality
@@ -95,7 +97,7 @@ echo "qsub -V -b y -j y -cwd -N Q2_TAX_VISUAL -q all.q@obelix09,all.q@obelix10,a
 # Generate the visual files for the created objects: filtered feature table, summarized filtered feature table, filtered rep seqs 
 # conda activate qiime2021.2
 echo "qsub -V -b y -j y -cwd -N Q2_FILTER -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime taxa filter-table --i-table ../06-qiime2_denoise_cluster/feature_table_full.qza --i-taxonomy ../07-qiime2_taxonomy/taxonomy.qza --p-exclude mitochondria,chloroplast --o-filtered-table feature_table_filtered.qza" > _01_qiime2_filter_table_repseqs.sh
-echo "qsub -V -b y -j y -cwd -N Q2_REPSEQS_FILT_VISUAL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime taxa filter-seqs --i-sequences ../06-qiime2_denoise_cluster/rep_seqs_full.qza --i-taxonomy ../07-qiime2_taxonomy/taxonomy.qza --p-exclude mitochondria,chloroplast --o-filtered-sequences rep_seqs_filtered.qza" >> _01_qiime2_filter_table_repseqs.sh
+echo "qsub -V -b y -j y -cwd -N Q2_REPSEQS_FILT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime taxa filter-seqs --i-sequences ../06-qiime2_denoise_cluster/rep_seqs_full.qza --i-taxonomy ../07-qiime2_taxonomy/taxonomy.qza --p-exclude mitochondria,chloroplast --o-filtered-sequences rep_seqs_filtered.qza" >> _01_qiime2_filter_table_repseqs.sh
 echo "qsub -V -b y -j y -cwd -N Q2_FTABLE_FILT_VISUAL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime metadata tabulate --m-input-file feature_table_filtered.qza --o-visualization feature_table_filtered.qzv" > _02_qiime2_filtered_visualfiles.sh
 echo "qsub -V -b y -j y -cwd -N Q2_FTABLE_FILT_SUMM_VISUAL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime feature-table summarize --i-table feature_table_filtered.qza --o-visualization feature_table_filtered_summarized.qzv --m-sample-metadata-file ../metadata.tsv" >> _02_qiime2_filtered_visualfiles.sh
 echo "qsub -V -b y -j y -cwd -N Q2_REPSEQS_FILT_VISUAL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime feature-table tabulate-seqs --i-data rep_seqs_filtered.qza --o-visualization rep_seqs_filtered.qzv" >> _02_qiime2_filtered_visualfiles.sh
