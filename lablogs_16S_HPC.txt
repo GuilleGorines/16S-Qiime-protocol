@@ -133,40 +133,40 @@ echo "qsub -V -b y -j y -cwd -N PY_TRANSPOSE_FILT_TABLE -q all.q@obelix09,all.q@
 # 11-qiime2_pylogeny/01-Full
 # Calculates the phylogenetic tree for the full (unfiltered) rep-seqs 
 # conda activate qiime2021.2
-echo "qsub -V -b y -j y -cwd -N Q2_PHYLO_FULL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime phylogeny align-to-tree-mafft-fasttree --i-sequences ../06-qiime2_denoise_cluster/rep_seqs_full.qza --o-alignment aligned_rep_seqs_full.qza --o-masked-alignment masked_aligned_rep_seqs_full.qza --o-tree unrooted_tree_full.qza --o-rooted-tree rooted_tree_full.qza" > _01_qiime2_align.sh
+echo "qsub -V -b y -j y -cwd -N Q2_PHYLO_FULL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime phylogeny align-to-tree-mafft-fasttree --i-sequences ../../06-qiime2_denoise_cluster/rep_seqs_full.qza --o-alignment aligned_rep_seqs_full.qza --o-masked-alignment masked_aligned_rep_seqs_full.qza --o-tree unrooted_tree_full.qza --o-rooted-tree rooted_tree_full.qza" > _01_qiime2_align.sh
 
 # 11-qiime2_pylogeny/02-Filtered
 # Calculates the phylogenetic tree for the filtered rep-seqs 
 # conda activate qiime2021.2
-echo "qsub -V -b y -j y -cwd -N Q2_PHYLO_FILT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime phylogeny align-to-tree-mafft-fasttree --i-sequences ../08-qiime2_filt_mit_chl/rep_seqs_filtered.qza --o-alignment aligned_filtered_rep_seqs.qza --o-masked-alignment masked_aligned_filtered_rep_seqs.qza --o-tree unrooted_tree_filtered.qza --o-rooted-tree rooted_tree_filtered.qza" > _01_qiime2_align_filtered.sh
+echo "qsub -V -b y -j y -cwd -N Q2_PHYLO_FILT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime phylogeny align-to-tree-mafft-fasttree --i-sequences ../../08-qiime2_filt_mit_chl/rep_seqs_filtered.qza --o-alignment aligned_filtered_rep_seqs.qza --o-masked-alignment masked_aligned_filtered_rep_seqs.qza --o-tree unrooted_tree_filtered.qza --o-rooted-tree rooted_tree_filtered.qza" > _01_qiime2_align_filtered.sh
 
 # 12-qiime2_diversity/01-Full
 # Calculates the diversity parameters for the full (unfiltered) table using the phylogeny
 # conda activate qiime2021.2
 # Must be provided with a number for the sampling depth. Value is extracted from the full summarized table
-echo "qsub -V -b y -j y -cwd -N Q2_PHYLOGENY_FULL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity core-metrics-phylogenetic --i-phylogeny ../11-qiime2_pylogeny/01-Full/rooted_tree_full.qza --i-table ../06-qiime2_denoise_cluster/feature_table_full.qza --p-sampling-depth $1 --m-metadata-file ../../metadata.tsv --output-dir ." > _01_qiime2_alpha_diversity_full.sh
-echo "qsub -V -b y -j y -cwd -N Q2_FAITH_FULL_VISUAL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity alpha-group-significance --i-alpha-diversity faith_pd_vector.qza --m-metadata-file ../../metadata.tsv --o-visualization faith_pd_summarized_full.qzv" >  _02_qiime2_faith_shannon.sh
-echo "qsub -V -b y -j y -cwd -N Q2_SHANNON_FULL_VISUAL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity alpha-group-significance --i-alpha-diversity shannon_vector.qza --m-metadata-file ../../metadata.tsv --o-visualization shannon_vector_summarized_full.qzv" >> _02_qiime2_faith_shannon.sh
+echo "qsub -V -b y -j y -cwd -N Q2_PHYLOGENY_FULL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity core-metrics-phylogenetic --i-phylogeny ../../11-qiime2_pylogeny/01-Full/rooted_tree_full.qza --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --p-sampling-depth $1 --m-metadata-file ../../metadata.tsv --output-dir alpha_diversity_full" > _01_qiime2_alpha_diversity_full.sh
+echo "qsub -V -b y -j y -cwd -N Q2_FAITH_FULL_VISUAL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity alpha-group-significance --i-alpha-diversity alpha_diversity_full/faith_pd_vector.qza --m-metadata-file ../../metadata.tsv --o-visualization faith_pd_summarized_full.qzv" >  _02_qiime2_faith_shannon.sh
+echo "qsub -V -b y -j y -cwd -N Q2_SHANNON_FULL_VISUAL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity alpha-group-significance --i-alpha-diversity alpha_diversity_full/shannon_vector.qza --m-metadata-file ../../metadata.tsv --o-visualization shannon_vector_summarized_full.qzv" >> _02_qiime2_faith_shannon.sh
 
 # 12-qiime2_diversity/02-Filtered
 # Calculates the diversity parameters for the filtered table using the phylogeny
 # Must be provided with a number for the sampling depth. Value is extracted from the filtered summarized table
 # conda activate qiime2021.2
-echo "qsub -V -b y -j y -cwd -N Q2_PHYLOGENY_FILT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity core-metrics-phylogenetic --i-phylogeny ../11-qiime2_pylogeny/02-Filtered/rooted_tree_filtered.qza --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --p-sampling-depth $1 --m-metadata-file ../../metadata.tsv --output-dir ." > _01_qiime2_alpha_diversity_filtered.sh
-echo "qsub -V -b y -j y -cwd -N Q2_FAITH_FILT_VISUAL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity alpha-group-significance --i-alpha-diversity faith_pd_vector.qza --m-metadata-file ../../metadata.tsv --o-visualization faith_pd_summarized_filtered.qzv" > _02_qiime2_faith_shannon_filtered.sh
-echo "qsub -V -b y -j y -cwd -N Q2_SHANNON_FILT_VISUAL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity alpha-group-significance --i-alpha-diversity shannon_vector.qza --m-metadata-file ../../metadata.tsv --o-visualization shannon_vector_summarized_filtered.qzv" >> _02_qiime2_faith_shannon_filtered.sh
+echo "qsub -V -b y -j y -cwd -N Q2_PHYLOGENY_FILT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity core-metrics-phylogenetic --i-phylogeny ../../11-qiime2_pylogeny/02-Filtered/rooted_tree_filtered.qza --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --p-sampling-depth $1 --m-metadata-file ../../metadata.tsv --output-dir alpha_diversity_filtered" > _01_qiime2_alpha_diversity_filtered.sh
+echo "qsub -V -b y -j y -cwd -N Q2_FAITH_FILT_VISUAL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity alpha-group-significance --i-alpha-diversity alpha_diversity_filtered/faith_pd_vector.qza --m-metadata-file ../../metadata.tsv --o-visualization faith_pd_summarized_filtered.qzv" > _02_qiime2_faith_shannon_filtered.sh
+echo "qsub -V -b y -j y -cwd -N Q2_SHANNON_FILT_VISUAL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity alpha-group-significance --i-alpha-diversity alpha_diversity_filtered/shannon_vector.qza --m-metadata-file ../../metadata.tsv --o-visualization shannon_vector_summarized_filtered.qzv" >> _02_qiime2_faith_shannon_filtered.sh
 
 # 13-qiime2_rarefaction/01-Full
 # Calculates the rarefaction curve for the full (unfiltered) table
 # Must be provided with a number for max-depth, extracted from the full summarized table
 # conda activate qiime2021.2
-echo "qsub -V -b y -j y -cwd -N RAREFACTION_FULL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity alpha-rarefaction --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --i-phylogeny ../../11-qiime2_pylogeny/01-Full/rooted_tree_full.qza --p-max-depth $1 --m-metadata-file ../../metadata.tsv --o-visualization alpha_rarefaction_full.qzv" > _01_qiime2_alpha_rarefaction.sh
+echo "qsub -V -b y -j y -cwd -N Q2_RAREFACTION_FULL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity alpha-rarefaction --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --i-phylogeny ../../11-qiime2_pylogeny/01-Full/rooted_tree_full.qza --p-max-depth $1 --m-metadata-file ../../metadata.tsv --o-visualization alpha_rarefaction_full.qzv" > _01_qiime2_alpha_rarefaction.sh
 
 # 13-qiime2_rarefaction/02-Filtered
 # Calculates the rarefaction curve for the full (unfiltered) table
 # Must be provided with a number for max-depth, extracted from the filtered summarized table
 # conda activate qiime2021.2
-echo "qsub -V -b y -j y -cwd -N RAREFACTION_FILT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity alpha-rarefaction --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --i-phylogeny ../../11-qiime2_pylogeny/02-Filtered/rooted_tree_filtered.qza --p-max-depth $1 --m-metadata-file ../../metadata.tsv --o-visualization alpha_rarefaction_filtered.qzv" > _01_qiime_alpha_rarefaction_filtered.sh
+echo "qsub -V -b y -j y -cwd -N Q2_RAREFACTION_FILT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity alpha-rarefaction --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --i-phylogeny ../../11-qiime2_pylogeny/02-Filtered/rooted_tree_filtered.qza --p-max-depth $1 --m-metadata-file ../../metadata.tsv --o-visualization alpha_rarefaction_filtered.qzv" > _01_qiime_alpha_rarefaction_filtered.sh
 
 # 99-stats
 # multiQC to assess the general quality of the reads
