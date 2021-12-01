@@ -55,7 +55,7 @@ cat ../samples_id.txt | xargs -I % echo "mkdir %; qsub -V -b y -j y -cwd -N PRE_
 # conda activate quality_control
 cat ../samples_id.txt | xargs -I % echo "mkdir %; qsub -V -b y -j y -cwd -N CUTADPT_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 cutadapt -a {ADAPTER_R1} -A {ADAPTER_R2} --json %/%.cutadapt.json -o %/%_adapter_removed_R1.fastq.gz -p %/%_adapter_removed_R2.fastq.gz ../00-reads/%_R1.fastq.gz ../00-reads/%_R2.fastq.gz" > _01_cutadapt.sh
 
-# 03-preprocessing_fastp
+# 03-fastp_preprocess
 # fastp to trim the raw sequences and improve quality
 # conda activate quality_control
 cat ../samples_id.txt | xargs -I % echo "mkdir %; qsub -V -b y -j y -cwd -N FASTP_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 fastp -i ../02-cutadapt_remove_primers/%/%_adapter_removed_R1.fastq.gz -I ../02-cutadapt_remove_primers/%/%_adapter_removed_R2.fastq.gz --trim_poly_x --cut_front --cut_tail --cut_mean_quality 20 --length_required 250 --qualified_quality_phred 30 --cut_window_size 4 --html %/%_trim_report_fastp.html --json %/%_trim_report_fastp.json -o %/%_R1_filtered.fq.gz -O %/%_R2_filtered.fq.gz" > _01_fastp.sh
@@ -63,7 +63,7 @@ cat ../samples_id.txt | xargs -I % echo "mkdir %; qsub -V -b y -j y -cwd -N FAST
 # 04-fastQC_posterior
 # fastQC to asses the trimmed reads quality	
 # conda activate quality_control
-cat ../samples_id.txt | xargs -I % echo "mkdir %;  qsub -V -b y -j y -cwd -N POST_FQC_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 fastqc -o % ../03-preprocessing_fastp/%/%_*_filtered.fq.gz" > _01_fastqc_post_trimming.sh
+cat ../samples_id.txt | xargs -I % echo "mkdir %;  qsub -V -b y -j y -cwd -N POST_FQC_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 fastqc -o % ../03-fastp_preprocess/%/%_*_filtered.fq.gz" > _01_fastqc_post_trimming.sh
 
 # 05-qiime2_import
 # Import the sequences in the manifest into a qiime2 object
@@ -88,7 +88,7 @@ echo "qsub -V -b y -j y -cwd -N Q2_TAB_REPSEQS_VISUAL -q all.q@obelix09,all.q@ob
 # Generate the visual files for the created objects: taxonomy
 # due to problems with the env variable, _01_qiime2_taxonomic_identification.sh calls _00_taxonomic_identification.sh
 # conda activate qiime2021.2
-echo "export TMPDIR=/scratch; qiime feature-classifier classify-sklearn --i-classifier /data/bi/references/QIIME2/2021.2_bayes_silva.qza --i-reads ../06-qiime2_denoise_cluster/rep_seqs_full.qza --o-classification taxonomy.qza" > _00_taxonomic_identification.sh
+echo "export TMPDIR=/scratch; qiime feature-classifier classify-sklearn --i-classifier /data/bi/references/QIIME2/2021.2_bayes_silva.qza --i-reads ../06-qiime2_denoise_cluster/rep_seqs_full.qza --p-confidence 0.8 --o-classification taxonomy.qza" > _00_taxonomic_identification.sh
 echo "qsub -V -b y -j y -cwd -N Q2_IDENTIFICATE -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 bash _00_taxonomic_identification.sh" > _01_qiime2_taxonomic_identification.sh
 echo "qsub -V -b y -j y -cwd -N Q2_TAX_VISUAL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime metadata tabulate --m-input-file taxonomy.qza --o-visualization taxonomy.qzv" > _02_qiime2_taxonomic_visual.sh
 
