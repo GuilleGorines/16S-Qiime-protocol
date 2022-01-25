@@ -154,7 +154,7 @@ echo "qsub -V -b y -j y -cwd -N Q2_EXPORT_UNROOTREE_FULL -q all.q@obelix09,all.q
 # conda activate qiime2021.2
 echo "qsub -V -b y -j y -cwd -N Q2_PHYLO_FILT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime phylogeny align-to-tree-mafft-fasttree --i-sequences ../../08-qiime2_filt_mit_chl/rep_seqs_filtered.qza --o-alignment aligned_filtered_rep_seqs.qza --o-masked-alignment masked_aligned_filtered_rep_seqs.qza --o-tree unrooted_tree_filtered.qza --o-rooted-tree rooted_tree_filtered.qza" > _01_qiime2_align_filtered.sh
 echo "qsub -V -b y -j y -cwd -N Q2_EXPORT_ROOTREE_FILT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime tools export --input-path rooted_tree_filtered.qza  --output-path rooted_tree_newick" > _02_qiime2_export_tree.sh
-echo "qsub -V -b y -j y -cwd -N Q2_EXPORT_UNROOTREE_FILT-q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime tools export --input-path unrooted_tree_filtered.qza  --output-path unrooted_tree_newick" >> _02_qiime2_export_tree.sh
+echo "qsub -V -b y -j y -cwd -N Q2_EXPORT_UNROOTREE_FILT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime tools export --input-path unrooted_tree_filtered.qza  --output-path unrooted_tree_newick" >> _02_qiime2_export_tree.sh
 
 # 12-qiime2_diversity/01-Full
 # Calculates the diversity parameters for the full (unfiltered) table using the phylogeny
