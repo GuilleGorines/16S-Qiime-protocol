@@ -38,6 +38,12 @@ mkdir 12-qiime2_diversity/02-Filtered
 mkdir 13-qiime2_rarefaction
 mkdir 13-qiime2_rarefaction/01-Full
 mkdir 13-qiime2_rarefaction/02-Filtered
+mkdir 14-qiime2_gneiss_differential_abundance
+mkdir 14-qiime2_gneiss_differential_abundance/01-Full
+mkdir 14-qiime2_gneiss_differential_abundance/02-Filtered
+mkdir 15-qiime2_ANCOM
+mkdir 15-qiime2_ANCOM/01-Full
+mkdir 15-qiime2_ANCOM/02-Filtered
 mkdir 99-stats
 ln -s ../00-reads .
 ln -s ../samples_id.txt .
@@ -183,6 +189,22 @@ echo "qsub -V -b y -j y -cwd -N Q2_RAREFACTION_FULL -q all.q@obelix09,all.q@obel
 # Must be provided with a number for max-depth, extracted from the filtered summarized table
 # conda activate qiime2021.2
 echo "qsub -V -b y -j y -cwd -N Q2_RAREFACTION_FILT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime diversity alpha-rarefaction --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --i-phylogeny ../../11-qiime2_phylogeny/02-Filtered/rooted_tree_filtered.qza --p-max-depth $1 --m-metadata-file ../../metadata.tsv --o-visualization alpha_rarefaction_filtered.qzv" > _01_qiime_alpha_rarefaction_filtered.sh
+
+# 14-qiime2_gneiss_differential_abundance/01-Full
+echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_FULL_HIERARCHY -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime gneiss correlation-clustering --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --o-clustering hierarchy_full.qza" > _01_qiime_gneiss_build_hierarchy_full.sh
+head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_FULL_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime gneiss dendrogram-heatmap --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --i-tree hierarchy_full.qza --m-metadata-file ../../metadata.tsv --m-metadata-column --p-color-map seismic --o-visualization heatmap_%_full.qzv" > _02_qiime_gneiss_heatmap_full.sh
+
+# 14-qiime2_gneiss_differential_abundance/02-Filtered
+echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_FILT_HIERARCHY -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime gneiss correlation-clustering --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --o-clustering hierarchy_filtered.qza" > _01_qiime_gneiss_build_hierarchy_filtered.sh
+head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_FILT_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime gneiss dendrogram-heatmap --i-table ../../06-qiime2_denoise_cluster/feature_table_filtered.qza --i-tree hierarchy_filtered.qza --m-metadata-file ../../metadata.tsv --m-metadata-column --p-color-map seismic --o-visualization heatmap_%_filtered.qzv" > _02_qiime_gneiss_heatmap_filtered.sh
+
+# 15-qiime2_ANCOM/01-Full
+echo "qsub -V -b y -j y -cwd -N Q2_FULL_PSEUDOCOUNT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime composition add-pseudocount --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --o-composition-table composition_table_full.qza" > _01_qiime_pseudocount_full.sh
+head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FILT_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime composition ancom --i-table composition_table_full.qza --m-metadata-file ../../metadata.tsv --m-metadata-category % --o-visualization ancom_%_full.qzv" > _02_qiime_ancom_full.sh
+
+# 15-qiime2_ANCOM/02-Filtered 
+echo "qsub -V -b y -j y -cwd -N Q2_FILT_PSEUDOCOUNT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime composition add-pseudocount --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --o-composition-table composition_table_filtered.qza" > _01_qiime_pseudocount_filtered.sh
+head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FILT_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime composition ancom --i-table composition_table_filtered.qza --m-metadata-file ../../metadata.tsv --m-metadata-category % --o-visualization ancom_%_filtered.qzv" > _02_qiime_ancom_filtered.sh
 
 # 99-stats
 # bring necessary files
