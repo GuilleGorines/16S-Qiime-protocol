@@ -96,16 +96,18 @@ echo "qsub -V -b y -j y -cwd -N Q2_TAB_REPSEQS_VISUAL -q all.q@obelix09,all.q@ob
 # conda activate qiime2021.2
 echo "export TMPDIR=/scratch; qiime feature-classifier classify-sklearn --i-classifier /data/bi/references/QIIME2/2021.2_bayes_silva.qza --i-reads ../06-qiime2_denoise_cluster/rep_seqs_full.qza --p-confidence 0.8 --o-classification taxonomy.qza" > _00_taxonomic_identification.sh
 echo "qsub -V -b y -j y -cwd -N Q2_IDENTIFICATE -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 bash _00_taxonomic_identification.sh" > _01_qiime2_taxonomic_identification.sh
-echo "qsub -V -b y -j y -cwd -N Q2_TAX_VISUAL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime metadata tabulate --m-input-file taxonomy.qza --o-visualization taxonomy.qzv" > _02_qiime2_taxonomic_visual.sh
+echo "qsub -V -b y -j y -cwd -N Q2_TAX_VISUAL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime metadata tabulate --m-input-file taxonomy.qza --o-visualization taxonomy.qzv" > _02_qiime2_taxonomic_visual_export.sh
+echo "qsub -V -b y -j y -cwd -N Q2_TAX_VISUAL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime tools export --input-path taxonomy.qza --output-path taxonomy" >> _02_qiime2_taxonomic_visual_export.sh
 
-# 07-qiime2_taxonomy
+# 07-qiime2_taxonomy_BLAST
 # Use SILVA 13_8 taxonomy and sequences to identify the rep seqs through mapping
 # Generate the visual files for the created objects: taxonomy
 # due to problems with the env variable, _01_qiime2_taxonomic_identification.sh calls _00_taxonomic_identification.sh
 # conda activate qiime2021.2
 echo "export TMPDIR=/scratch; qiime feature-classifier classify-consensus-blast --i-query ../06-qiime2_denoise_cluster/rep_seqs_full.qza --i-reference-reads /data/bi/references/QIIME2/Silva_138_99_sequences.qza --i-reference-taxonomy /data/bi/references/QIIME2/Silva_138_99_taxonomy.qza --o-classification taxonomy.qza" > _00_taxonomic_identification.sh
 echo "qsub -V -b y -j y -cwd -N Q2_IDENTIFICATE_BLAST -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 bash _00_taxonomic_identification.sh" > _01_qiime2_taxonomic_identification.sh
-echo "qsub -V -b y -j y -cwd -N Q2_TAX_VISUAL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime metadata tabulate --m-input-file taxonomy.qza --o-visualization taxonomy.qzv" > _02_qiime2_taxonomic_visual.sh
+echo "qsub -V -b y -j y -cwd -N Q2_TAX_VISUAL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime metadata tabulate --m-input-file taxonomy.qza --o-visualization taxonomy.qzv" > _02_qiime2_taxonomic_visual_export.sh
+echo "qsub -V -b y -j y -cwd -N Q2_TAX_VISUAL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime tools export --input-path taxonomy.qza --output-path taxonomy" >> _02_qiime2_taxonomic_visual_export.sh
 
 # 08-qiime2_filt_mit_chl
 # Filter mitochondria and chloroplast from the feature table and rep-seqs
@@ -229,21 +231,22 @@ echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_FILT_HIERARCHY -q all.q@obelix09,all.q
 head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_FILT_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime gneiss dendrogram-heatmap --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --i-tree hierarchy_filtered.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --p-color-map seismic --o-visualization heatmap_%_filtered.qzv" > _02_qiime_gneiss_heatmap_filtered.sh
 
 # 15-qiime2_ANCOM/01-Full
+ln -s /data/bi/pipelines/16S-Qiime-protocol/Identify_ANCOM.py Identify_ANCOM.py
 echo "qsub -V -b y -j y -cwd -N Q2_FULL_PSEUDOCOUNT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime composition add-pseudocount --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --o-composition-table composition_table_full.qza" > _01_qiime_pseudocount_full.sh
 head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FULL_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime composition ancom --i-table composition_table_full.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization ancom_%_full.qzv" > _02_qiime_ancom_full.sh
-echo "ls *.qzv | xargs -I % OUTDIR=$(basename % .qzv); echo \"qiime tools export --input-path % --output-path \${OUTDIR}_dir\"" > _03_export_abundances.sh
-
-
-echo "ls *.qzv | xargs -I % echo \"qsub -V -b y -j y -cwd -N Q2_ANCOM_FULL_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime export  \""
-
+head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_EXPORT_ANCOM_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime tools export --input-path ancom_%_full.qzv --output-path ancom_%_full_dir" > _03_qiime_export_ancom_full.sh
+head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N PY_GENERATE_ANCOM_RESULTS -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python3 Identify_ANCOM.py --taxonomy ../../07-qiime2_taxonomy/taxonomy/taxonomy.tsv --data ancom_%_full_dir/data.tsv --ancom ancom_%_full_dir/ancom.tsv --percent-abundances ancom_%_full_dir/percent-abundances.tsv" > _04_python_get_full_abundance_tables.sh 
 
 # 15-qiime2_ANCOM/02-Filtered 
-echo "qsub -V -b y -j y -cwd -N Q2_FILT_PSEUDOCOUNT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime composition add-pseudocount --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --o-composition-table composition_table_filtered.qza" > _01_qiime_pseudocount_filtered.sh
-head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FILT_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime composition ancom --i-table composition_table_filtered.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization ancom_%_filtered.qzv" > _02_qiime_ancom_filtered.sh
+ln -s /data/bi/pipelines/16S-Qiime-protocol/Identify_ANCOM.py Identify_ANCOM.py
+echo "qsub -V -b y -j y -cwd -N Q2_FILT_PSEUDOCOUNT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime composition add-pseudocount --i-table ../../06-qiime2_denoise_cluster/feature_table_filt.qza --o-composition-table composition_table_filt.qza" > _01_qiime_pseudocount_filt.sh
+head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FILT_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime composition ancom --i-table composition_table_filt.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization ancom_%_filt.qzv" > _02_qiime_ancom_filt.sh
+head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_EXPORT_ANCOM_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime tools export --input-path ancom_%_filt.qzv --output-path ancom_%_filt_dir" > _03_qiime_export_ancom_filt.sh
+head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N PY_GENERATE_ANCOM_RESULTS -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python3 Identify_ANCOM.py --taxonomy ../../07-qiime2_taxonomy/taxonomy/taxonomy.tsv --data ancom_%_filt_dir/data.tsv --ancom ancom_%_filt_dir/ancom.tsv --percent-abundances ancom_%_filt_dir/percent-abundances.tsv" > _04_python_get_filt_abundance_tables.sh 
 
 # 99-stats
 # bring necessary files
-ln -s /data/bi/pipelines/16S-Qiime-protocol/generate_read_balance.py generate_read_balance.py
+ln -s /data/bi/pipelines/16S-Qiime-protocol/process_table.py 
 ln -s ../01-fastQC_previous .
 ln -s ../02-cutadapt_remove_primers .
 ln -s ../03-fastp_preprocess .
