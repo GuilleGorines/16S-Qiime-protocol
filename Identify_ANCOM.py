@@ -33,9 +33,10 @@ def create_taxonomy_dict(taxfile):
     taxdict = dict()
 
     with open(taxfile) as taxfile:
-        taxfile = taxfile.readlines().replace("\n","").split("\t")
+        taxfile = taxfile.readlines()
+        taxfile = [item.replace("\n","").split("\t") for item in taxfile]
 
-    for line in taxfile:
+    for _ in taxfile:
         for code, identification in taxfile:
             taxdict[code] = identification
 
@@ -45,23 +46,25 @@ def join_files(abundances_file, datafile, ancomfile):
     # join abundances.tsv, data.tsv & ancom.tsv files into a single list
 
     with open(abundances_file) as abundances_file:
-        abundances_file = abundances_file.readlines().replace("\n","").split("\t")
-
+        abundances_file = abundances_file.readlines()
+        abundances_file = [line.replace("\n","").split("\t") for line in abundances_file]
     # headers first
     joined_list = [abundances_file[0].extend(["-","-","-"]), abundances_file[1].extend(["clr","W","Reject null Hypothesis"])]
     datadict = dict()
 
     for line in abundances_file[2:]:
         datadict[0] = line
-
         
     with open(datafile) as datafile:
-        datafile = datafile.readlines().replace("\n","").split("\t")
+        datafile = datafile.readlines()
+        datafile = [line.replace("\n","").split("\t") for line in datafile]
+
         for line in datafile:
             datadict[line[0]].extend(line[1:])
 
     with open(ancomfile) as ancomfile:
-        ancomfile = ancomfile.readlines().replace("\n","").split("\t")
+        ancomfile = ancomfile.readlines()
+        ancomfile = [line.replace("\n","").split("\t") for line in ancomfile]
         for line in ancomfile:
             datadict[line[0]].extend(line[2])
     
