@@ -36,9 +36,9 @@ def create_taxonomy_dict(taxfile):
         taxfile = taxfile.readlines()
         taxfile = [item.replace("\n","").split("\t") for item in taxfile]
 
-    for _ in taxfile:
-        for code, identification in taxfile:
-            taxdict[code] = identification
+
+    for code, identification, confidence in taxfile[1:]:        
+        taxdict[code] = identification
 
     return taxdict
 
@@ -49,40 +49,48 @@ def join_files(abundances_file, datafile, ancomfile):
         abundances_file = abundances_file.readlines()
         abundances_file = [line.replace("\n","").split("\t") for line in abundances_file]
     # headers first
-    joined_list = [abundances_file[0].extend(["-","-","-"]), abundances_file[1].extend(["clr","W","Reject null Hypothesis"])]
+    joined_list = [abundances_file[0] + ["-","-","-"], abundances_file[1] + ["clr","W","Reject null Hypothesis"]]
+        
     datadict = dict()
 
     for line in abundances_file[2:]:
-        datadict[0] = line
-        
+        datadict[line[0]] = line
+                
     with open(datafile) as datafile:
         datafile = datafile.readlines()
         datafile = [line.replace("\n","").split("\t") for line in datafile]
 
-        for line in datafile:
-            datadict[line[0]].extend(line[1:])
-
+        for line in datafile[1:]:
+            datadict[line[0]] = datadict[line[0]] + line[1:]
+            
     with open(ancomfile) as ancomfile:
         ancomfile = ancomfile.readlines()
         ancomfile = [line.replace("\n","").split("\t") for line in ancomfile]
-        for line in ancomfile:
-            datadict[line[0]].extend(line[2])
+
+        
+        for line in ancomfile[1:]:        
+            datadict[line[0]] = datadict[line[0]] + [line[2]]
     
-    joined_list.append(datadict.values())
+    joined_list = joined_list + list(datadict.values())
 
     return joined_list
 
 def identify_taxa(in_list, taxdict):
     # changes hashes with their identified taxa
 
+    changed_list = [ ["-"] + in_list[0], ["code"] + in_list[1]]
+    
     for position, item in enumerate(in_list[2:]):
-        item[position+2][0] = taxdict[item[position+2][0]]
-        
-    return in_list
+        identified_line = [in_list[position+2][0]] + [taxdict[in_list[position+2][0]]] + in_list[position+2][1:]
+        changed_list.append(identified_line)
+                        
+    return changed_list
 
 def tsv_from_list(inserted_list, filename):
+    # Generate a TSV file from a list 
+    # Eeach item in the list will be a line
 
-    with open(filename) as outfile:
+    with open(filename,"w") as outfile:
         for line in inserted_list:
             for column in line:
                 outfile.write(column)
