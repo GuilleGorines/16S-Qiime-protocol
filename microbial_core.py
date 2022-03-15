@@ -12,6 +12,7 @@ DESCRIPTION:
     Ad-hoc script to get the list of present organsims by group
 INPUT:
     1. The raw counts (lvl 7)
+    2. the metadata file
 OUTPUT:
     -Json with all presence by level and category
     -Directory for each category
@@ -23,6 +24,7 @@ import json
 import sys
 
 infile = sys.argv[1]
+metadata_file = sys.argv[2]
 
 def normalize_dataframe(dataframe, criteria=0):
     """
@@ -73,7 +75,7 @@ counts = pd.read_csv(
 
 # Import the metadata file so it matches with the counts
 metadata = pd.read_csv(
-    "metadata.tsv",
+    metadata_file,
     sep='\t',
     header=0,
     index_col=0
