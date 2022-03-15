@@ -145,7 +145,7 @@ echo "qsub -V -b y -j y -cwd -N Q2_CONVERT_FULL_TABLE_7 -q all.q@obelix09,all.q@
 echo "qsub -V -b y -j y -cwd -N Q2_CONVERT_FULL_TABLE_6 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 biom convert --input-fp lvl_6_biom/feature-table.biom --output-fp long_full_table_lvl_6.tsv --to-tsv" >> _03_qiime2_biom_to_tsv.sh
 echo "qsub -V -b y -j y -cwd -N PY_TRANSPOSE_FULL_TABLE_7 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python process_table.py long_full_table_lvl_7.tsv absolute_numbers_taxonomy_lvl_7_full.tsv" > _04_python_transpose_tsv.sh
 echo "qsub -V -b y -j y -cwd -N PY_TRANSPOSE_FULL_TABLE_6 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python process_table.py long_full_table_lvl_6.tsv absolute_numbers_taxonomy_lvl_6_full.tsv" >> _04_python_transpose_tsv.sh
-echo "qsub -V -b y -j y -cwd -N PY_CORE_HEATMAP_FULL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python microbial_core.py absolute_numbers_taxonomy_lvl_7_full.tsv; python heatmap.py 10" > _05_python_core_heatmap.py
+echo "qsub -V -b y -j y -cwd -N PY_CORE_HEATMAP_FULL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python microbial_core.py absolute_numbers_taxonomy_lvl_7_full.tsv ../../metadata.tsv; python heatmap.py 10" > _05_python_core_heatmap.py
 
 # 10-qiime2_absoluteNumbers/02-Filtered
 # Generates a table (row=samples; column=taxa) with absolute hit numbers collapsed to lvl 7, species from the filtered table
