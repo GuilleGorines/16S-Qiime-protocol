@@ -22,6 +22,7 @@ OUTPUT:
 import pandas as pd
 import json
 import sys
+import os
 
 infile = sys.argv[1]
 metadata_file = sys.argv[2]
