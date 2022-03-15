@@ -55,7 +55,9 @@ level_dict = {"lvl7" : "species",
 dir_list = [
     os.path.realpath(item[0]) for item in os.walk(".") 
     if item[0] != "." 
-    and "logs" not in item[0]] 
+    and "logs" not in item[0]
+    and "lvl_6" not in item[0]
+    and "lvl_7" not in item[0]] 
 
 # list of files in previous directories
 file_list = []
