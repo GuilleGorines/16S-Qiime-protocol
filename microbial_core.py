@@ -22,6 +22,7 @@ OUTPUT:
 import pandas as pd
 import json
 import sys
+import os
 
 infile = sys.argv[1]
 metadata_file = sys.argv[2]
@@ -63,7 +64,7 @@ def create_category_dict(metadata):
             category_name = category_names_list[col_index]
             valid_categories[category_name] = [item for item in groups]
 
-    return valid_categories
+    return valid_categories, category_names_list
 
 # Import the counts
 counts = pd.read_csv(
@@ -82,7 +83,7 @@ metadata = pd.read_csv(
     )
 
 # Get the categories
-valid_categories = create_category_dict(metadata)
+valid_categories, category_names_list = create_category_dict(metadata)
 
 # Generate the full dataframe
 # concat metadata and counts
