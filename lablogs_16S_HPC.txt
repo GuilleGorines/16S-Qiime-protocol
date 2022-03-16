@@ -164,7 +164,7 @@ echo "qsub -V -b y -j y -cwd -N Q2_CONVERT_FILT_TABLE_7 -q all.q@obelix09,all.q@
 echo "qsub -V -b y -j y -cwd -N Q2_CONVERT_FILT_TABLE_6 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 biom convert --input-fp lvl_6_biom/feature-table.biom --output-fp long_filtered_table_lvl_6.tsv --to-tsv" >> _03_qiime2_biom_to_tsv.sh
 echo "qsub -V -b y -j y -cwd -N PY_TRANSPOSE_FILT_TABLE_7 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python process_table.py long_filtered_table_lvl_7.tsv absolute_numbers_taxonomy_lvl_7_filtered.tsv" > _04_python_transpose_tsv.sh
 echo "qsub -V -b y -j y -cwd -N PY_TRANSPOSE_FILT_TABLE_6 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python process_table.py long_filtered_table_lvl_6.tsv absolute_numbers_taxonomy_lvl_6_filtered.tsv" >> _04_python_transpose_tsv.sh
-echo "qsub -V -b y -j y -cwd -N PY_CORE_FILT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python microbial_core.py absolute_numbers_taxonomy_lvl_7_filt.tsv ../../metadata.tsv" > _05_python_core.sh
+echo "qsub -V -b y -j y -cwd -N PY_CORE_FILT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python microbial_core.py absolute_numbers_taxonomy_lvl_7_filtered.tsv ../../metadata.tsv" > _05_python_core.sh
 echo "qsub -V -b y -j y -cwd -N PY_HMAP_FILT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15  python heatmap.py 10" > _06_python_heatmaps.sh
 
 # 11-qiime2_phylogeny/01-Full
