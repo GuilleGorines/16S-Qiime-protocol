@@ -25,6 +25,8 @@ import matplotlib.pyplot as plt
 
 relevant_features = sys.argv[1]
 
+os.mkdir("Heatmaps")
+
 def remove_zero_columns(df):
     """Remove rows that are all 0"""
     
@@ -76,7 +78,7 @@ for file in file_list:
     
     category, level = os.path.basename(file).replace(".tsv","").split("_")
     level = level_dict[level]
-    png_name = f"{level}_{category}.png"
+    png_name = f"Heatmaps/{level}_{category}.png"
     
     # dict to rename index
     dict_rename_index = {item:item.split("_")[-1] for item in df.index}
@@ -90,7 +92,8 @@ for file in file_list:
     sns.set(rc={'axes.facecolor':'white', 'figure.facecolor':'white'})
     ax.set_title(f"Abundance (% of samples) of organism {level} by {category}", fontdict={'fontsize' : 20})
     ax.tick_params(labelsize=13)
-    sns.heatmap(df, annot=True, 
+    sns.heatmap(df, 
+                annot=True, 
                 cbar=True, 
                 cmap="Greens", 
                 vmax=100, 
@@ -105,3 +108,4 @@ for file in file_list:
     plt.yticks(rotation=0)
     plt.xticks(rotation=45)
     plt.savefig(png_name)
+    plt.close()
