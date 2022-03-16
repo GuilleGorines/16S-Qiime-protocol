@@ -69,7 +69,7 @@ for folder in dir_list:
 # remove empty columns
 # get the N most relevant features
 
-for file in file_list[0:1]:
+for file in file_list:
     df = pandas.read_csv(file, sep="\t", header=0, index_col=0)
     df = remove_zero_columns(df)
     df = get_most_relevant(df,10)
@@ -88,7 +88,8 @@ for file in file_list[0:1]:
 
     fig,ax = plt.subplots(figsize=(15,15))
     sns.set(rc={'axes.facecolor':'white', 'figure.facecolor':'white'})
-    ax.set_title(f"Abundance (% of samples) of organism {level} by {category}", fontdict={'fontsize' : 15})
+    ax.set_title(f"Abundance (% of samples) of organism {level} by {category}", fontdict={'fontsize' : 20})
+    ax.tick_params(labelsize=13)
     sns.heatmap(df, annot=True, 
                 cbar=True, 
                 cmap="Greens", 
@@ -99,7 +100,6 @@ for file in file_list[0:1]:
                 ax=ax, 
                 cbar_kws={
                     "orientation" : "horizontal",
-                    "location" : "top"
                 }
             )
     plt.yticks(rotation=0)
