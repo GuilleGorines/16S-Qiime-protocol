@@ -47,7 +47,7 @@ def get_most_relevant(df, number):
 # dictionary to associate level and group
 level_dict = {"lvl7" : "species",
              "lvl6" : "genera",
-             "lvl5" : "gamily",
+             "lvl5" : "family",
              "lvl4" : "order",
              "lvl3" : "class",
              "lvl2" : "phyla",
