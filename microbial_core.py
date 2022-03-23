@@ -140,44 +140,24 @@ for category, values in valid_categories.items():
             leveled_df = normalize_dataframe(leveled_df, criteria=1)
             
             leveled_df.loc["All"] = leveled_df.sum()
-            
+
             # normalize it (I had to do it with a for loop, sorry viewer)
             row_number, col_number = leveled_df.shape
             
-            # last row, row_number -1, is the "All" row
+            # last row, row_number-1, is the "All" row
             for column in range(0, col_number):
                 # first, get the relative abundance of each taxon on each group 
                 leveled_df.iloc[row_number-1, column] = leveled_df.iloc[row_number-1, column]*100/(row_number-1) 
             
+
             # file will contain row: category name, columns: abundance of this taxa in the group
-            filename = f"{category}/{category}_lvl{level}.tsv"
+            filename = f"{category}_prevalence_plots/{category}_lvl{level}.tsv"
+
+            to_write_df = leveled_df.transpose()
+            to_write_df.to_csv(filename, sep="\t")
             
-            # if file doesnt exist, create file and add header
-            # if exists, append
-            if os.path.exists(filename):
-                with open(filename, "a") as infile:
-                    content = [f"{category}_{value}"] + leveled_df.loc['All'].tolist()
-                    for item in content:
-                        infile.write(str(item))
-                        infile.write("\t")
-                    infile.write("\n")
-            else:
-                # if file doesnt exist, create header
-                with open(filename, "w") as infile:
-                    header = ["group"] + list(leveled_df.columns)
-                    for item in header:
-                        infile.write(item)
-                        infile.write("\t")
-                    infile.write("\n")
-                    
-                    content = [f"{category}_{value}"] + leveled_df.loc['All'].tolist()
-                    for item in content:
-                        infile.write(str(item))
-                        infile.write("\t")
-                    infile.write("\n")
-                    
             for column in range(0, col_number):
-                # if present in all, change it to 1
+                # if present in all, change it to 1 (global presence)
                 # else change it to 0
                 if leveled_df.iloc[row_number-1, column] < 100:                    
                     leveled_df.iloc[row_number-1, column] = 0
