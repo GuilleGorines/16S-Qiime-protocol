@@ -45,7 +45,7 @@ for dictionary in mqc_json["report_general_stats_data"]:
         
         # adapter_removed is given to fastp
         if "_adapter_removed" in key:
-            read_data_dict[digested_samplename]["Reads after Trimmomatic"] = int(value['filtering_result_passed_filter_reads'])
+            read_data_dict[digested_samplename]["Reads after Trimming"] = int(value['filtering_result_passed_filter_reads'])
         
         # no "_filtered" or no "_adapter_removed" means RAW, "_adapter_removed" means trimmed
         else:
@@ -85,7 +85,7 @@ for item in statfile:
 # 0: Sample id
 # 1: Raw reads
 # 2: Reads after Cutadapt
-# 3: Reads after Trimmomatic
+# 3: Reads after Trimming
 # 4: R1 raw mean length
 # 5: R2 Raw mean length
 # 6: R1 Trimmed mean length
@@ -98,7 +98,7 @@ for item in statfile:
 with open("Read_balance.tsv","w") as outfile:
     headers_list = ["Sample id", "RAW Reads",
                     "Reads after Cutadapt","% of reads after Cutadapt",
-                    "Reads after Trimmomatic","% of reads after Trimmomatic",
+                    "Reads after Trimming","% of reads after Trimming",
                     "R1 reads RAW mean length","R2 reads RAW mean length",
                     "R1 reads Trimmed mean length","R2 reads Trimmed mean length",
                     "Reads after Qiime2 filtering","% of reads after Qiime2 filtering",
@@ -116,8 +116,8 @@ with open("Read_balance.tsv","w") as outfile:
         after_cutadapt_percentage = after_cutadapt*100/raw
 
         # trimmomatic counts single reads instead of pairs
-        after_trimmomatic = line["Reads after Trimmomatic"]
-        after_trimmomatic_percentage = after_trimmomatic*100/raw*2
+        after_trimmomatic = line["Reads after Trimming"]/2
+        after_trimmomatic_percentage = after_trimmomatic*100/raw
 
         R1_raw = line["R1 RAW mean length"]
         R2_raw = line["R2 RAW mean length"]
