@@ -136,7 +136,6 @@ mkdir lvl_6_biom
 mkdir lvl_7_biom
 ln -s /data/bi/pipelines/16S-Qiime-protocol/process_table.py process_table.py
 ln -s /data/bi/pipelines/16S-Qiime-protocol/microbial_core.py microbial_core.py
-ln -s /data/bi/pipelines/16S-Qiime-protocol/heatmap.py heatmap.py
 echo "qsub -V -b y -j y -cwd -N Q2_COLLAPSE_FULL_TABLE_7 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime taxa collapse --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --i-taxonomy ../../07-qiime2_taxonomy/taxonomy.qza --p-level 7 --o-collapsed-table collapsed_full_table_lvl_7.qza" > _01_qiime2_collapse_table.sh
 echo "qsub -V -b y -j y -cwd -N Q2_COLLAPSE_FULL_TABLE_6 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime taxa collapse --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --i-taxonomy ../../07-qiime2_taxonomy/taxonomy.qza --p-level 6 --o-collapsed-table collapsed_full_table_lvl_6.qza" >> _01_qiime2_collapse_table.sh
 echo "qsub -V -b y -j y -cwd -N Q2_EXPORT_FULL_BIOM_7 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime tools export --input-path collapsed_full_table_lvl_7.qza --output-path ./lvl_7_biom" > _02_qiime2_export_biom_table.sh
@@ -146,7 +145,6 @@ echo "qsub -V -b y -j y -cwd -N Q2_CONVERT_FULL_TABLE_6 -q all.q@obelix09,all.q@
 echo "qsub -V -b y -j y -cwd -N PY_TRANSPOSE_FULL_TABLE_7 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python process_table.py long_full_table_lvl_7.tsv absolute_numbers_taxonomy_lvl_7_full.tsv" > _04_python_transpose_tsv.sh
 echo "qsub -V -b y -j y -cwd -N PY_TRANSPOSE_FULL_TABLE_6 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python process_table.py long_full_table_lvl_6.tsv absolute_numbers_taxonomy_lvl_6_full.tsv" >> _04_python_transpose_tsv.sh
 echo "qsub -V -b y -j y -cwd -N PY_CORE_FULL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python microbial_core.py absolute_numbers_taxonomy_lvl_7_full.tsv ../../metadata.tsv" > _05_python_core.sh
-echo "qsub -V -b y -j y -cwd -N PY_HMAP_FULL -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python heatmap.py 10" > _06_python_heatmaps.sh
 
 # 10-qiime2_absoluteNumbers/02-Filtered
 # Generates a table (row=samples; column=taxa) with absolute hit numbers collapsed to lvl 7, species from the filtered table
@@ -155,7 +153,6 @@ mkdir lvl_6_biom
 mkdir lvl_7_biom
 ln -s /data/bi/pipelines/16S-Qiime-protocol/process_table.py process_table.py
 ln -s /data/bi/pipelines/16S-Qiime-protocol/microbial_core.py microbial_core.py
-ln -s /data/bi/pipelines/16S-Qiime-protocol/heatmap.py heatmap.py
 echo "qsub -V -b y -j y -cwd -N Q2_COLLAPSE_FILT_TABLE_7 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime taxa collapse --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --i-taxonomy ../../07-qiime2_taxonomy/taxonomy.qza --p-level 7 --o-collapsed-table collapsed_filtered_table_lvl_7.qza" > _01_qiime2_collapse_table.sh
 echo "qsub -V -b y -j y -cwd -N Q2_COLLAPSE_FILT_TABLE_6 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime taxa collapse --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --i-taxonomy ../../07-qiime2_taxonomy/taxonomy.qza --p-level 6 --o-collapsed-table collapsed_filtered_table_lvl_6.qza" >> _01_qiime2_collapse_table.sh
 echo "qsub -V -b y -j y -cwd -N Q2_EXPORT_FILT_BIOM_7 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime tools export --input-path collapsed_filtered_table_lvl_7.qza --output-path ./lvl_7_biom" > _02_qiime2_export_biom_table.sh
@@ -164,8 +161,7 @@ echo "qsub -V -b y -j y -cwd -N Q2_CONVERT_FILT_TABLE_7 -q all.q@obelix09,all.q@
 echo "qsub -V -b y -j y -cwd -N Q2_CONVERT_FILT_TABLE_6 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 biom convert --input-fp lvl_6_biom/feature-table.biom --output-fp long_filtered_table_lvl_6.tsv --to-tsv" >> _03_qiime2_biom_to_tsv.sh
 echo "qsub -V -b y -j y -cwd -N PY_TRANSPOSE_FILT_TABLE_7 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python process_table.py long_filtered_table_lvl_7.tsv absolute_numbers_taxonomy_lvl_7_filtered.tsv" > _04_python_transpose_tsv.sh
 echo "qsub -V -b y -j y -cwd -N PY_TRANSPOSE_FILT_TABLE_6 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python process_table.py long_filtered_table_lvl_6.tsv absolute_numbers_taxonomy_lvl_6_filtered.tsv" >> _04_python_transpose_tsv.sh
-echo "qsub -V -b y -j y -cwd -N PY_CORE_FILT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python microbial_core.py absolute_numbers_taxonomy_lvl_7_filtered.tsv ../../metadata.tsv" > _05_python_core.sh
-echo "qsub -V -b y -j y -cwd -N PY_HMAP_FILT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15  python heatmap.py 10" > _06_python_heatmaps.sh
+
 
 # 11-qiime2_phylogeny/01-Full
 # Calculates the phylogenetic tree for the full (unfiltered) rep-seqs 
