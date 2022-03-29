@@ -137,7 +137,6 @@ do
     mkdir -p "lvl_${i}"
     echo "qsub -V -b y -j y -cwd -N Q2_COLLAPSE_FULL_TABLE_${i} -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime taxa collapse --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --i-taxonomy ../../07-qiime2_taxonomy/taxonomy.qza --p-level ${i} --o-collapsed-table lvl_${i}/collapsed_raw_full_table_lvl_${i}.qza" >> _01_qiime2_collapse_table.sh
     echo "qsub -V -b y -j y -cwd -N Q2_VISUAL_FULL_COLLAPSED_TABLE_${i} -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime metadata tabulate --m-input-file lvl_${i}/collapsed_raw_full_table_lvl_${i}.qza --o-visualization lvl_${i}/colapsed_raw_full_table_lvl_${i}.qzv" >> _02_qiime2_visual_collapsed_tables.sh
-
 done
 
 # echo "qsub -V -b y -j y -cwd -N PY_EXTRACT_TABLES_FULL_7 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python Extract_metadata.py lvl_7/collapsed_full_table_lvl_7.qza lvl7 OTU_table_full_lvl7" > _03_python_extract_tables.sh
@@ -151,13 +150,11 @@ done
 # 10-qiime2_absoluteNumbers/02-Filtered
 # Generates a table (row=samples; column=taxa) with absolute hit numbers collapsed to lvl 7, species from the filtered table
 # conda activate qiime2021.2
-
 for i in {1..7};
 do
     mkdir -p "lvl_${i}"
     echo "qsub -V -b y -j y -cwd -N Q2_COLLAPSE_FILT_TABLE_${i} -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime taxa collapse --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --i-taxonomy ../../07-qiime2_taxonomy/taxonomy.qza --p-level ${i} --o-collapsed-table lvl_${i}/collapsed_raw_filt_table_lvl_${i}.qza" > _01_qiime2_collapse_table.sh
     echo "qsub -V -b y -j y -cwd -N Q2_VISUAL_FILT_COLLAPSED_TABLE_${i} -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime metadata tabulate --m-input-file lvl_${i}/collapsed_raw_filt_table_lvl_${i}.qza --o-visualization lvl_${i}/collapsed_raw_filt_table_lvl_${i}.qzv" > _02_qiime2_visual_collapsed_tables.sh
-
 done
 
 # echo "qsub -V -b y -j y -cwd -N PY_EXTRACT_TABLES_FILT_7 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python Extract_metadata.py lvl_7/collapsed_full_table_lvl_7.qza lvl7 OTU_table_filtered_lvl7" > _03_python_extract_tables.sh
