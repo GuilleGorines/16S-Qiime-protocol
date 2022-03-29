@@ -130,10 +130,8 @@ echo "qsub -V -b y -j y -cwd -N Q2_BARPLOT_FULL -q all.q@obelix09,all.q@obelix10
 echo "qsub -V -b y -j y -cwd -N Q2_BARPLOT_FILT -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime taxa barplot --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --i-taxonomy ../../07-qiime2_taxonomy/taxonomy.qza --m-metadata-file ../../metadata.tsv --o-visualization taxa_barplots_filtered.qzv" > _01_qiime2_filter_taxa_barplots.sh
 
 # 10-qiime2_absoluteNumbers/01-Full
-# Generates a tables with absolute hit numbers collapsed to lvl 6 and 7, species from the full (unfiltered) table
+# Collapses feature tables to all levels (1-7)
 # conda activate qiime2021.2
-
-
 for i in {1..7};
 do
     mkdir -p "lvl_${i}"
@@ -141,8 +139,6 @@ do
     echo "qsub -V -b y -j y -cwd -N Q2_VISUAL_FULL_COLLAPSED_TABLE_${i} -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime metadata tabulate --m-input-file lvl_${i}/collapsed_raw_full_table_lvl_${i}.qza --o-visualization lvl_${i}/colapsed_raw_full_table_lvl_${i}.qzv" >> _02_qiime2_visual_collapsed_tables.sh
 
 done
-
-
 
 # echo "qsub -V -b y -j y -cwd -N PY_EXTRACT_TABLES_FULL_7 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python Extract_metadata.py lvl_7/collapsed_full_table_lvl_7.qza lvl7 OTU_table_full_lvl7" > _03_python_extract_tables.sh
 # echo "qsub -V -b y -j y -cwd -N PY_EXTRACT_TABLES_FULL_6 -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python Extract_metadata.py lvl_6/collapsed_full_table_lvl_6.qza lvl6 OTU_table_full_lvl6" >> _03_python_extract_tables.sh
@@ -260,12 +256,11 @@ echo "qsub -V -b y -j y -cwd -N Q2_FULL_PSEUDOCOUNT -q all.q@obelix09,all.q@obel
 head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FULL_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime composition ancom --i-table composition_table_full.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization ancom_%_full.qzv" > _02_qiime_ancom_full.sh
 head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_EXPORT_ANCOM_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime tools export --input-path ancom_%_full.qzv --output-path ancom_%_full_dir" > _03_qiime_export_ancom_full.sh
 head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N PY_GENERATE_ANCOM_RESULTS -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python3 Identify_ANCOM.py --taxonomy ../../07-qiime2_taxonomy/taxonomy_table/taxonomy.tsv --data ancom_%_full_dir/data.tsv --ancom ancom_%_full_dir/ancom.tsv --percent-abundances ancom_%_full_dir/percent-abundances.tsv" > _04_python_get_full_abundance_tables.sh 
-
 for i in {1..7};
 do
     mkdir -p "lvl_${i}"
-    echo "qsub -V -b y -j y -cwd -N Q2_FULL_PSEUDOCOUNT_${i} -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime composition add-pseudocount --i-table ../../10-qiime2_absoluteNumbers/01-Full/lvl_${i}/collapsed_raw_filt_table_lvl_${i}.qza --o-composition-table lvl_${i}/composition_table_full.qza" > _01_qiime_pseudocount_full.sh
-    head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FULL_%_${i} -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime composition ancom --i-table composition_table_full_${i}.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization ancom_%_full_${i}.qzv" >> _02_qiime_ancom_full.sh    
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_PSEUDOCOUNT_${i} -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime composition add-pseudocount --i-table ../../10-qiime2_absoluteNumbers/01-Full/lvl_${i}/collapsed_raw_full_table_lvl_${i}.qza --o-composition-table lvl_${i}/composition_table_full_${i}.qza" >> _01_qiime_pseudocount_full.sh
+    head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FULL_%_${i} -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime composition ancom --i-table lvl_${i}/composition_table_full_${i}.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization lvl_${i}/ancom_%_full_${i}.qzv" >> _02_qiime_ancom_full.sh    
 done
 
 
@@ -275,6 +270,13 @@ echo "qsub -V -b y -j y -cwd -N Q2_FILT_PSEUDOCOUNT -q all.q@obelix09,all.q@obel
 head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FILT_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime composition ancom --i-table composition_table_filt.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization ancom_%_filt.qzv" > _02_qiime_ancom_filt.sh
 head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_EXPORT_ANCOM_% -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime tools export --input-path ancom_%_filt.qzv --output-path ancom_%_filt_dir" > _03_qiime_export_ancom_filt.sh
 head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N PY_GENERATE_ANCOM_RESULTS -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python3 Identify_ANCOM.py --taxonomy ../../07-qiime2_taxonomy/taxonomy_table/taxonomy.tsv --data ancom_%_filt_dir/data.tsv --ancom ancom_%_filt_dir/ancom.tsv --percent-abundances ancom_%_filt_dir/percent-abundances.tsv" > _04_python_get_filt_abundance_tables.sh 
+for i in {1..7};
+do
+    mkdir -p "lvl_${i}"
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_PSEUDOCOUNT_${i} -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime composition add-pseudocount --i-table ../../10-qiime2_absoluteNumbers/02-Filtered/lvl_${i}/collapsed_raw_filt_table_lvl_${i}.qza --o-composition-table lvl_${i}/composition_table_filt_${i}.qza" >> _01_qiime_pseudocount_full.sh
+    head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FULL_%_${i} -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime composition ancom --i-table lvl_${i}/composition_table_filt_${i}.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization lvl_${i}/ancom_%_filt_${i}.qzv" >> _02_qiime_ancom_full.sh    
+done
+
 
 # 99-stats
 # bring necessary files
