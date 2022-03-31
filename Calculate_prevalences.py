@@ -105,7 +105,6 @@ for category, values in valid_categories.items():
         for column in range(0, col_number):
             # first, get the relative abundance of each taxon on each group 
             leveled_df.iloc[row_number-1, column] = leveled_df.iloc[row_number-1, column]*100/(row_number-1) 
-            
 
             # file will contain row: category name, columns: abundance of this taxa in the group
             filename = f"{category}_prevalence_plots/{category}_lvl{level}.tsv"
