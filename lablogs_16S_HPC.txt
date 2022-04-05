@@ -159,6 +159,9 @@ done
 # 10-qiime2_absoluteNumbers/02-Filtered
 # Collapses feature tables to all levels (1-7)
 # conda activate qiime2021.2
+
+ln -s /data/bi/pipelines/16S-Qiime-protocol/
+
 for i in {1..7};
 do
     # Create scaffold
@@ -170,8 +173,7 @@ do
     echo "qsub -V -b y -j y -cwd -N Q2_COLLAPSE_FILT_TABLE_${i} -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime taxa collapse --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --i-taxonomy ../../07-qiime2_taxonomy/taxonomy.qza --p-level ${i} --o-collapsed-table lvl_${i}/raw/collapsed_raw_filt_table_lvl_${i}.qza" >> _01_qiime2_collapse_table.sh
 
     # Python script to get the prevalence, abs freq, rel freq and prevalence
-    echo "qsub -V -b y -j y -cwd -N Q2_VISUAL_FILT_COLLAPSED_RAW_TABLE_${i} -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python " >> _02_python_.sh
-
+    echo "qsub -V -b y -j y -cwd -N PY_Numbers_${i} -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 python Calculate_number_params.py lvl_${i}/raw/collapsed_raw_filt_table_lvl_${i}.qza ../../metadata.tsv lvl_${i} ${i}" >> _02_python_numbers.sh
 
     # Visual files for raw tables
     echo "qsub -V -b y -j y -cwd -N Q2_VISUAL_FILT_COLLAPSED_RAW_TABLE_${i} -q all.q@obelix09,all.q@obelix10,all.q@obelix11,all.q@obelix12,all.q@obelix13,all.q@obelix14,all.q@obelix15 qiime metadata tabulate --m-input-file lvl_${i}/raw/collapsed_raw_filt_table_lvl_${i}.qza --o-visualization lvl_${i}/raw/colapsed_raw_filt_table_lvl_${i}.qzv" >> _03_qiime2_visual_collapsed_tables.sh
