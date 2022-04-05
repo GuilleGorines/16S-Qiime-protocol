@@ -8,7 +8,6 @@ def save_long_wide(df, filename):
     """
     Generates tsv for a dataframe and for its transposed
     """
-    
     df.to_csv(f"{filename}_wide.tsv", sep="\t")
     df.transpose().to_csv(f"{filename}_long.tsv", sep="\t")
     return
@@ -17,7 +16,6 @@ def relative_abundances(df):
     """
     Obtain the relative abundance of the otus
     """
-    
     df["Total"] = df.sum(axis=1)
     rownum, colnum = df.shape
     for row in range(rownum):
@@ -38,14 +36,9 @@ def normalize_dataframe(dataframe, criteria=0):
     
     for row in range(0, row_number):
         for col in range(0, col_number):
-            if dataframe.iloc[row, col] >= criteria:
-                
-                print(f"{dataframe.iloc[row, col]} is considered 1")
-                
+            if dataframe.iloc[row, col] >= criteria:                
                 dataframe.iloc[row, col] = 1
             else:
-                print(f"{dataframe.iloc[row, col]} is considered 0")
-
                 dataframe.iloc[row, col] = 0
                 
     return dataframe
@@ -92,10 +85,6 @@ def prevalences(df, metadata):
             # Normalize (0: absence, 1: presence)
             norm_df = normalize_dataframe(sub_df, criteria=1)
             norm_df.loc["Prevalence"] = norm_df.sum(axis=0)
-            
-            
-            norm_df.transpose().to_csv("normalizada.tsv",sep="\t")
-
 
             row_number, col_number = norm_df.shape
         
@@ -115,7 +104,6 @@ def clean_dataframe(df):
     """
     Remove the columns ending with ;__
     """
-    
     df = df.loc[:,~df.columns.str.endswith(";__")]
 
     return df
@@ -130,19 +118,23 @@ def artifact_from_df(df_in, filename):
 
 # Input 1: feature table in qza format
 # Input 2: metadata in tsv format
+# Input 3: name of the output directory
+# Input 4: level (for naming purposes)
 
-qza_in = "Assets/collapsed_raw_full_table_lvl_5.qza"
-metadata_file = "Assets/metadata.tsv"
+qza_in = sys.argv[1]
+metadata_file = sys.argv[2]
+outdir = sys.argv[3]
+level = sys.argv[4]
 
 # df from qza
 df = Artifact.load(qza_in).view(pd.DataFrame)
 
 # Save the absolute numbers
-save_long_wide(df,"absolute_numbers")
+save_long_wide(df, f"{outdir}/raw/absolute_numbers_lvl_{level}")
 
 # Save the relative numbers
 rel_df = relative_abundances(df)
-save_long_wide(rel_df,"relative_numbers")
+save_long_wide(rel_df, f"{outdir}/raw/relative_numbers_lvl_{level}")
 
 # Read metadata
 metadata = pd.read_csv(
@@ -157,7 +149,10 @@ prevalences(df, metadata)
 # Clean metadata
 clean_df = clean_dataframe(df)
 
-artifact_from_df(clean_df, "table_clean")
+# save into an artifact
+artifact_name = qza_in.replace("raw", "clean")
+
+artifact_from_df(clean_df, artifact_name)
 save_long_wide(clean_df, "_clean")
 
 rel_clean_df = relative_abundances(clean_df)
