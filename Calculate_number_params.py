@@ -65,7 +65,7 @@ def create_category_dict(metadata):
 
     return valid_categories, category_names_list
 
-def prevalences(df, metadata):
+def prevalences(df, metadata, outname):
     """
     Calculate the prevalence for each group
     """
@@ -97,7 +97,7 @@ def prevalences(df, metadata):
         
         prevalence_df = pd.concat(prevalence_per_value)
         
-        save_long_wide(prevalence_df, f"prevalence")  
+        save_long_wide(prevalence_df, f"{outname}_{category}")  
     
 
 def clean_dataframe(df):
@@ -120,7 +120,6 @@ def artifact_from_df(df_in, filename):
 # Input 2: metadata in tsv format
 # Input 3: name of the output directory
 # Input 4: level (for naming purposes)
-
 qza_in = sys.argv[1]
 metadata_file = sys.argv[2]
 outdir = sys.argv[3]
@@ -144,7 +143,9 @@ metadata = pd.read_csv(
     index_col=0
     )
 
-prevalences(df, metadata)
+outname = f"{outdir}/raw/prevalence_lvl_{level}"
+
+prevalences(df, metadata, outname)
 
 # Clean metadata
 clean_df = clean_dataframe(df)
@@ -158,5 +159,7 @@ save_long_wide(clean_df, "_clean")
 rel_clean_df = relative_abundances(clean_df)
 save_long_wide(rel_clean_df, "_clean")
 
-prevalences(clean_df, metadata)
+outname = f"{outdir}/raw/prevalence_lvl_{level}"
+
+prevalences(clean_df, metadata, outname)
 
