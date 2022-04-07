@@ -16,7 +16,7 @@ def relative_abundances(df):
     """
     Obtain the relative abundance of the otus
     """
-    df["Total"] = df.sum(axis=1)
+    df.loc[:,"Total"] = df.sum(axis=1)
     rownum, colnum = df.shape
     for row in range(rownum):
         for col in range(colnum-1):
@@ -65,7 +65,7 @@ def create_category_dict(metadata):
 
     return valid_categories, category_names_list
 
-def prevalences(df, metadata, outname):
+def prevalences(df, metadata, outdir, level):
     """
     Calculate the prevalence for each group
     """
@@ -97,8 +97,7 @@ def prevalences(df, metadata, outname):
         
         prevalence_df = pd.concat(prevalence_per_value)
         
-        save_long_wide(prevalence_df, f"{outname}_{category}")  
-    
+        save_long_wide(prevalence_df, f"{outdir}_{category}_lvl_{level}")  
 
 def clean_dataframe(df):
     """
@@ -112,7 +111,7 @@ def clean_dataframe(df):
 def artifact_from_df(df_in, filename):
     
     clean_qza = Artifact.import_data("FeatureTable[Frequency]", df_in)
-    clean_qza.save(f"{filename}.qza")
+    clean_qza.save(f"{filename}")
     
     return
 
@@ -129,11 +128,11 @@ level = sys.argv[4]
 df = Artifact.load(qza_in).view(pd.DataFrame)
 
 # Save the absolute numbers
-save_long_wide(df, f"{outdir}/raw/absolute_numbers_lvl_{level}")
+save_long_wide(df, f"{outdir}/raw/absolute_numbers_lvl_{level}_raw")
 
 # Save the relative numbers
 rel_df = relative_abundances(df)
-save_long_wide(rel_df, f"{outdir}/raw/relative_numbers_lvl_{level}")
+save_long_wide(rel_df, f"{outdir}/raw/relative_numbers_lvl_{level}_raw")
 
 # Read metadata
 metadata = pd.read_csv(
@@ -143,23 +142,32 @@ metadata = pd.read_csv(
     index_col=0
     )
 
-outname = f"{outdir}/raw/prevalence_lvl_{level}"
+# Create directory for prevalences
+os.mkdir(f"{outdir}/raw/Prevalences/")
+prevalences(df, metadata, f"{outdir}/raw/Prevalences/prevalence_raw", level)
 
-prevalences(df, metadata, outname)
 
-# Clean metadata
+# Clean dataframe
 clean_df = clean_dataframe(df)
 
 # save into an artifact
 artifact_name = qza_in.replace("raw", "clean")
-
 artifact_from_df(clean_df, artifact_name)
-save_long_wide(clean_df, "_clean")
+
+# save the asbsolute and relative numbers
+save_long_wide(clean_df, f"{outdir}/clean/absolute_numbers_lvl_{level}_clean")
 
 rel_clean_df = relative_abundances(clean_df)
-save_long_wide(rel_clean_df, "_clean")
+save_long_wide(rel_clean_df, f"{outdir}/clean/relative_numbers_lvl_{level}_clean")
 
-outname = f"{outdir}/raw/prevalence_lvl_{level}"
+# Prevalences
+os.mkdir(f"{outdir}/clean/Prevalences")
+prevalences(clean_df, metadata, f"{outdir}/clean/Prevalences/prevalence_clean", level)
 
-prevalences(clean_df, metadata, outname)
 
+# python Calculate_number_params.py lvl_5/raw/collapsed_raw_full_table_lvl_5.qza metadata.tsv lvl_5 5
+# Input 1: feature table in qza format
+
+# Input 2: metadata in tsv format
+# Input 3: name of the output directory
+# Input 4: level (for naming purposes)
