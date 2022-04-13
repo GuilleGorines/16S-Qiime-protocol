@@ -160,7 +160,7 @@ if args.mode == "full" or args.mode == "filt":
 else:
 
     # df from qza
-    df = Artifact.load(qza_in).view(pd.DataFrame)
+    df = Artifact.load(args.qza_in).view(pd.DataFrame)
 
     # Save the absolute numbers
     save_long_wide(df, f"{outdir}/raw/absolute_numbers_lvl_{level}_raw")
@@ -185,7 +185,7 @@ else:
     clean_df = clean_dataframe(df)
 
     # Save into an artifact
-    artifact_name = qza_in.replace("raw", "clean")
+    artifact_name = args.qza_in.replace("raw", "clean")
     artifact_from_df(clean_df, artifact_name)
 
     # Save the asbsolute and relative numbers for the clean table
