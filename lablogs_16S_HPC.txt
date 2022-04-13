@@ -122,11 +122,11 @@ echo "qsub -V -b y -j y -cwd -N Q2_REPSEQS_FILT_VISUAL -q all.q@obelix05,all.q@o
 # 09-qiime2_collapse_numbers/01-Full
 # Collapses feature tables to all levels (1-7)
 # conda activate qiime2021.2
-ln -s 
+ln -s /data/bi/pipelines/16S-Qiime-protocol/bin/Calculate_number_params.py .
 
-|> _01_qiime2_collapse_table.sh
+:> _01_qiime2_collapse_table.sh
 echo "qsub -V -b y -j y -cwd -N PY_PARAMS_FULL -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 python Calculate_number_params.py --qza-in ../../06-qiime2_denoise_cluster/feature_table_full.qza --metadata-file ../../metadata.tsv --outdir . --mode full" > _02_python_numbers.sh
-|> _03_qiime2_visual_collapsed_tables.sh
+:> _03_qiime2_visual_collapsed_tables.sh
 
 for i in {1..7};
 do

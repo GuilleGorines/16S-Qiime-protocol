@@ -66,7 +66,7 @@ def create_category_dict(metadata):
 
     return valid_categories, category_names_list
 
-def prevalences(df, metadata, outdir, level=None, mode):
+def prevalences(df, metadata, outdir, mode, level=None):
     """
     Calculate the prevalence for each group
     """
