@@ -3,6 +3,7 @@ import pandas as pd
 
 import sys
 import os
+import argparse
 
 def save_long_wide(df, filename):
     """
@@ -65,7 +66,7 @@ def create_category_dict(metadata):
 
     return valid_categories, category_names_list
 
-def prevalences(df, metadata, outdir, level):
+def prevalences(df, metadata, outdir, level=None, mode):
     """
     Calculate the prevalence for each group
     """
@@ -96,8 +97,11 @@ def prevalences(df, metadata, outdir, level):
             prevalence_per_value.append(norm_df.loc[value].to_frame().transpose())        
         
         prevalence_df = pd.concat(prevalence_per_value)
-        
-        save_long_wide(prevalence_df, f"{outdir}_{category}_lvl_{level}")  
+
+        if level is None:
+            save_long_wide(prevalence_df, f"{outdir}/Prevalence_{category}_{mode}")
+        else:
+            save_long_wide(prevalence_df, f"{outdir}/Prevalence_{category}_lvl_{level}_{mode}")  
 
 def clean_dataframe(df):
     """
@@ -115,59 +119,84 @@ def artifact_from_df(df_in, filename):
     
     return
 
-# Input 1: feature table in qza format
-# Input 2: metadata in tsv format
-# Input 3: name of the output directory
-# Input 4: level (for naming purposes)
-qza_in = sys.argv[1]
-metadata_file = sys.argv[2]
-outdir = sys.argv[3]
-level = sys.argv[4]
+# Input 5: mode (collapsed to clean, original not to)
 
-# df from qza
-df = Artifact.load(qza_in).view(pd.DataFrame)
+parser = argparse.ArgumentParser(description='Generate the abundances and prevalences from the qza feature table')
 
-# Save the absolute numbers
-save_long_wide(df, f"{outdir}/raw/absolute_numbers_lvl_{level}_raw")
+parser.add_argument('--qza-in', help='feature table in qza format', dest="qza_in", required=True)
+parser.add_argument('--metadata-file', help='metadata in tsv format', dest="metadata", required=True)
+parser.add_argument('--outdir', help='name of the output directory', dest="outdir", required=True)
+parser.add_argument('--mode', help='mode to choose from', choices= ["collapsed", "full", "filt"], dest="mode", required=True)
+parser.add_argument('--level', help='level (for naming purposes)', dest="level", default=None)
 
-# Save the relative numbers
-rel_df = relative_abundances(df)
-save_long_wide(rel_df, f"{outdir}/raw/relative_numbers_lvl_{level}_raw")
+args = parser.parse_args()
 
-# Read metadata
-metadata = pd.read_csv(
-    metadata_file,
-    sep='\t',
-    header=0,
-    index_col=0
-    )
+if args.mode == "full" or args.mode == "filt":
+    # df from qza
+    df = Artifact.load(args.qza_in).view(pd.DataFrame)
+    
+    # Save the absolute numbers
+    save_long_wide(df, f"absolute_numbers_{args.mode}")
 
-# Create directory for prevalences
-os.mkdir(f"{outdir}/raw/Prevalences/")
-prevalences(df, metadata, f"{outdir}/raw/Prevalences/prevalence_raw", level)
+    # Save the relative numbers
+    rel_df = relative_abundances(df)
+    save_long_wide(rel_df, f"relative_numbers_{args.mode}")
 
+    # Prevalences
+    # Read metadata
+    metadata = pd.read_csv(
+        args.metadata,
+        sep='\t',
+        header=0,
+        index_col=0
+        )
 
-# Clean dataframe
-clean_df = clean_dataframe(df)
+    os.mkdir(f"{args.outdir}/Prevalences_{args.mode}")
+    prevalences(df=df, metadata=metadata, outdir=f"{args.outdir}/Prevalences_{args.mode}", level=None, mode=args.mode)
 
-# save into an artifact
-artifact_name = qza_in.replace("raw", "clean")
-artifact_from_df(clean_df, artifact_name)
+    print(f"Stats on {args.mode} un-collapsed table ended successfully!")
+    sys.exit(0)
 
-# save the asbsolute and relative numbers
-save_long_wide(clean_df, f"{outdir}/clean/absolute_numbers_lvl_{level}_clean")
+else:
 
-rel_clean_df = relative_abundances(clean_df)
-save_long_wide(rel_clean_df, f"{outdir}/clean/relative_numbers_lvl_{level}_clean")
+    # df from qza
+    df = Artifact.load(qza_in).view(pd.DataFrame)
 
-# Prevalences
-os.mkdir(f"{outdir}/clean/Prevalences")
-prevalences(clean_df, metadata, f"{outdir}/clean/Prevalences/prevalence_clean", level)
+    # Save the absolute numbers
+    save_long_wide(df, f"{outdir}/raw/absolute_numbers_lvl_{level}_raw")
 
+    # Save the relative numbers
+    rel_df = relative_abundances(df)
+    save_long_wide(rel_df, f"{outdir}/raw/relative_numbers_lvl_{level}_raw")
 
-# python Calculate_number_params.py lvl_5/raw/collapsed_raw_full_table_lvl_5.qza metadata.tsv lvl_5 5
-# Input 1: feature table in qza format
+    # Read metadata
+    metadata = pd.read_csv(
+        args.metadata,
+        sep='\t',
+        header=0,
+        index_col=0
+        )
 
-# Input 2: metadata in tsv format
-# Input 3: name of the output directory
-# Input 4: level (for naming purposes)
+    # Create directory for prevalences
+    os.mkdir(f"{outdir}/raw/Prevalences/")
+    prevalences(df=df, metadata=metadata, outdir=f"{outdir}/raw/Prevalences/", level=args.level, mode="raw")
+   
+    # Clean dataframe
+    clean_df = clean_dataframe(df)
+
+    # Save into an artifact
+    artifact_name = qza_in.replace("raw", "clean")
+    artifact_from_df(clean_df, artifact_name)
+
+    # Save the asbsolute and relative numbers for the clean table
+    save_long_wide(clean_df, f"{outdir}/clean/absolute_numbers_lvl_{level}_clean")
+
+    rel_clean_df = relative_abundances(clean_df)
+    save_long_wide(rel_clean_df, f"{outdir}/clean/relative_numbers_lvl_{level}_clean")
+
+    # Prevalences for the clean table
+    os.mkdir(f"{outdir}/clean/Prevalences")
+    prevalences(df=clean_df, metadata=metadata, outdir=f"{outdir}/clean/Prevalences/", level=args.level, mode="clean")
+
+    print(f"Stats on level {args.level} collapsed table ended successfully!")
+    sys.exit(0)

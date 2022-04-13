@@ -15,20 +15,31 @@ cat samples_id.txt | xargs -I % printf "%\t$(pwd)/$(date '+%Y%m%d')_ANALYSIS01_1
 # ANALYSIS01_16S
 # Generates the directory structure for the analysis
 # Generates a symbolic link to the sample-list, named samples directory and manifest
-mkdir 01-fastQC_previous	
-mkdir 02-cutadapt_remove_primers	
-mkdir 03-fastp_preprocess	
-mkdir 04-fastQC_posterior	
-mkdir 05-qiime2_import	
-mkdir 06-qiime2_denoise_cluster	
-mkdir 07-qiime2_taxonomy	
-mkdir 08-qiime2_filt_mit_chl	
-mkdir 09-qiime2_taxabarplots
-mkdir 09-qiime2_taxabarplots/01-Full
-mkdir 09-qiime2_taxabarplots/02-Filtered
-mkdir 10-qiime2_absoluteNumbers
-mkdir 10-qiime2_absoluteNumbers/01-Full
-mkdir 10-qiime2_absoluteNumbers/02-Filtered
+mkdir 01-fastQC_previous
+
+mkdir 02-cutadapt_remove_primers
+
+mkdir 03-fastp_preprocess
+
+mkdir 04-fastQC_posterior
+
+mkdir 05-qiime2_import
+
+mkdir 06-qiime2_denoise_cluster
+
+mkdir 07-qiime2_taxonomy
+
+mkdir 08-qiime2_filt_mit_chl
+
+mkdir 09-qiime2_collapse_numbers
+mkdir 09-qiime2_collapse_numbers/01-Full
+mkdir 09-qiime2_collapse_numbers/02-Filtered
+
+mkdir 10-qiime2_taxabarplots
+
+mkdir 10-qiime2_taxabarplots/01-Full
+mkdir 10-qiime2_taxabarplots/02-Filtered
+
 mkdir 11-qiime2_phylogeny
 mkdir 11-qiime2_phylogeny/01-Full
 mkdir 11-qiime2_phylogeny/02-Filtered
@@ -119,19 +130,16 @@ echo "qsub -V -b y -j y -cwd -N Q2_FTABLE_FILT_VISUAL -q all.q@obelix05,all.q@ob
 echo "qsub -V -b y -j y -cwd -N Q2_FTABLE_FILT_SUMM_VISUAL -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime feature-table summarize --i-table feature_table_filtered.qza --o-visualization feature_table_filtered_summarized.qzv --m-sample-metadata-file ../metadata.tsv" >> _02_qiime2_filtered_visualfiles.sh
 echo "qsub -V -b y -j y -cwd -N Q2_REPSEQS_FILT_VISUAL -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime feature-table tabulate-seqs --i-data rep_seqs_filtered.qza --o-visualization rep_seqs_filtered.qzv" >> _02_qiime2_filtered_visualfiles.sh
 
-# 09-qiime2_taxabarplots/01-Full
-# Generates the visual file with the barplot for the full (unfiltered) feature tables
-# conda activate qiime2021.2
-echo "qsub -V -b y -j y -cwd -N Q2_BARPLOT_FULL -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime taxa barplot --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --i-taxonomy ../../07-qiime2_taxonomy/taxonomy.qza --m-metadata-file ../../metadata.tsv --o-visualization taxa_barplots_full.qzv" > _01_qiime2_taxa_barplots_full.sh
-
-# 09-qiime2_taxabarplots/02-Filtered
-# Generates the visual file with the barplot for the filtered feature tables
-# conda activate qiime2021.2
-echo "qsub -V -b y -j y -cwd -N Q2_BARPLOT_FILT -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime taxa barplot --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --i-taxonomy ../../07-qiime2_taxonomy/taxonomy.qza --m-metadata-file ../../metadata.tsv --o-visualization taxa_barplots_filtered.qzv" > _01_qiime2_filter_taxa_barplots.sh
-
-# 10-qiime2_absoluteNumbers/01-Full
+# 09-qiime2_collapse_numbers/01-Full
 # Collapses feature tables to all levels (1-7)
 # conda activate qiime2021.2
+
+ln -s 
+
+|> _01_qiime2_collapse_table.sh
+echo "qsub -V -b y -j y -cwd -N PY_PARAMS_FULL -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 python Calculate_number_params.py --qza-in ../../06-qiime2_denoise_cluster/feature_table_full.qza --metadata-file ../../metadata.tsv --outdir . --mode full" > _02_python_numbers.sh
+|> _03_qiime2_visual_collapsed_tables.sh
+
 for i in {1..7};
 do
     # Create scaffold
@@ -143,8 +151,7 @@ do
     echo "qsub -V -b y -j y -cwd -N Q2_COLLAPSE_FULL_TABLE_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime taxa collapse --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --i-taxonomy ../../07-qiime2_taxonomy/taxonomy.qza --p-level ${i} --o-collapsed-table lvl_${i}/raw/collapsed_raw_full_table_lvl_${i}.qza" >> _01_qiime2_collapse_table.sh
 
     # Python script to get the prevalence, abs freq, rel freq and prevalence
-    echo "qsub -V -b y -j y -cwd -N Q2_VISUAL_FULL_COLLAPSED_RAW_TABLE_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 python " >> _02_python_.sh
-
+    echo "qsub -V -b y -j y -cwd -N PY_NUMBERS_FULL_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 python Calculate_number_params.py --qza-in lvl_${i}/raw/collapsed_raw_full_table_lvl_${i}.qza --metadata-file ../../metadata.tsv --outdir lvl_${i} --mode collapsed --level ${i}" >> _02_python_numbers.sh
 
     # Visual files for raw tables
     echo "qsub -V -b y -j y -cwd -N Q2_VISUAL_FULL_COLLAPSED_RAW_TABLE_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime metadata tabulate --m-input-file lvl_${i}/raw/collapsed_raw_full_table_lvl_${i}.qza --o-visualization lvl_${i}/raw/colapsed_raw_full_table_lvl_${i}.qzv" >> _03_qiime2_visual_collapsed_tables.sh
@@ -156,11 +163,15 @@ do
 
 done
 
-# 10-qiime2_absoluteNumbers/02-Filtered
+# 09-qiime2_collapse_numbers/02-Filtered
 # Collapses feature tables to all levels (1-7)
 # conda activate qiime2021.2
 
-ln -s /data/bi/pipelines/16S-Qiime-protocol/
+ln -s 
+
+|> _01_qiime2_collapse_table.sh
+echo "qsub -V -b y -j y -cwd -N PY_PARAMS_FILT -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 python Calculate_number_params.py --qza-in ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --metadata-file ../../metadata.tsv --outdir . --mode filt" > _02_python_numbers.sh
+|> _03_qiime2_visual_collapsed_tables.sh
 
 for i in {1..7};
 do
@@ -173,23 +184,27 @@ do
     echo "qsub -V -b y -j y -cwd -N Q2_COLLAPSE_FILT_TABLE_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime taxa collapse --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --i-taxonomy ../../07-qiime2_taxonomy/taxonomy.qza --p-level ${i} --o-collapsed-table lvl_${i}/raw/collapsed_raw_filt_table_lvl_${i}.qza" >> _01_qiime2_collapse_table.sh
 
     # Python script to get the prevalence, abs freq, rel freq and prevalence
-    echo "qsub -V -b y -j y -cwd -N PY_Numbers_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 python Calculate_number_params.py lvl_${i}/raw/collapsed_raw_filt_table_lvl_${i}.qza ../../metadata.tsv lvl_${i} ${i}" >> _02_python_numbers.sh
+    echo "qsub -V -b y -j y -cwd -N PY_NUMBERS_FILT_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 python Calculate_number_params.py --qza-in lvl_${i}/raw/collapsed_raw_filt_table_lvl_${i}.qza --metadata-file ../../metadata.tsv --outdir lvl_${i} --mode collapsed --level ${i}" >> _02_python_numbers.sh
 
     # Visual files for raw tables
     echo "qsub -V -b y -j y -cwd -N Q2_VISUAL_FILT_COLLAPSED_RAW_TABLE_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime metadata tabulate --m-input-file lvl_${i}/raw/collapsed_raw_filt_table_lvl_${i}.qza --o-visualization lvl_${i}/raw/colapsed_raw_filt_table_lvl_${i}.qzv" >> _03_qiime2_visual_collapsed_tables.sh
     echo "qsub -V -b y -j y -cwd -N Q2_VISUAL_FILT_COLLAPSED_RAW_TABLE_${i}_SUMM -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime feature-table summarize --i-table lvl_${i}/raw/collapsed_raw_filt_table_lvl_${i}.qza --o-visualization lvl_${i}/raw/collapsed_raw_filt_table_lvl_${i}_summarized.qzv --m-sample-metadata-file ../metadata.tsv" >> _03_qiime2_visual_collapsed_tables.sh
     
     # Visual files for clean tables
-    echo "qsub -V -b y -j y -cwd -N Q2_VISUAL_FILT_COLLAPSED_CLEAN_TABLE_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime metadata tabulate --m-input-file lvl_${i}/clean/collapsed_clean_filt_table_lvl_${i}.qza --o-visualization lvl_${i}/clean/colapsed_clean_filt_table_lvl_${i}.qzv" >> _03_qiime2_visual_collapsed_tables.sh
-    echo "qsub -V -b y -j y -cwd -N Q2_VISUAL_FILT_COLLAPSED_CLEAN_TABLE_${i}_SUMM -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime feature-table summarize --i-table lvl_${i}/clean/collapsed_clean_filt_table_lvl_${i}.qza --o-visualization lvl_${i}/clean/collapsed_clean_filt_table_lvl_${i}_summarized.qzv --m-sample-metadata-file ../metadata.tsv" >> _03_qiime2_visual_collapsed_tables.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_VISUAL_FILT_COLLAPSED_CLEAN_TABLE_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime metadata tabulate --m-input-file lvl_${i}/clean/collapsed_clean_filt_table_lvl_${i}.qza --o-visualization lvl_${i}/clean/colapsed_clean_full_table_lvl_${i}.qzv" >> _03_qiime2_visual_collapsed_tables.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_VISUAL_FILT_COLLAPSED_CLEAN_TABLE_${i}_SUMM -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime feature-table summarize --i-table lvl_${i}/clean/collapsed_clean_filt_table_lvl_${i}.qza --o-visualization lvl_${i}/clean/collapsed_clean_full_table_lvl_${i}_summarized.qzv --m-sample-metadata-file ../metadata.tsv" >> _03_qiime2_visual_collapsed_tables.sh
 
 done
 
+# 10-qiime2_taxabarplots/01-Full
+# Generates the visual file with the barplot for the full (unfiltered) feature tables
+# conda activate qiime2021.2
+echo "qsub -V -b y -j y -cwd -N Q2_BARPLOT_FULL -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime taxa barplot --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --i-taxonomy ../../07-qiime2_taxonomy/taxonomy.qza --m-metadata-file ../../metadata.tsv --o-visualization taxa_barplots_full.qzv" > _01_qiime2_taxa_barplots_full.sh
 
-
-
-
-
+# 10-qiime2_taxabarplots/02-Filtered
+# Generates the visual file with the barplot for the filtered feature tables
+# conda activate qiime2021.2
+echo "qsub -V -b y -j y -cwd -N Q2_BARPLOT_FILT -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime taxa barplot --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --i-taxonomy ../../07-qiime2_taxonomy/taxonomy.qza --m-metadata-file ../../metadata.tsv --o-visualization taxa_barplots_filtered.qzv" > _01_qiime2_filter_taxa_barplots.sh
 
 # 11-qiime2_phylogeny/01-Full
 # Calculates the phylogenetic tree for the full (unfiltered) rep-seqs 
@@ -210,11 +225,13 @@ echo "qsub -V -b y -j y -cwd -N Q2_EXPORT_UNROOTREE_FILT -q all.q@obelix05,all.q
 # conda activate qiime2021.2
 # Must be provided with a number for the sampling depth. Value is extracted from the full summarized table
 echo "qsub -V -b y -j y -cwd -N Q2_PHYLOGENETIC_DIVERSITY_FULL -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity core-metrics-phylogenetic --i-phylogeny ../../11-qiime2_phylogeny/01-Full/rooted_tree_full.qza --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --p-sampling-depth $1 --m-metadata-file ../../metadata.tsv --output-dir alpha_diversity_full" > _01_qiime2_alpha_diversity_full.sh
+
 echo "qsub -V -b y -j y -cwd -N Q2_FULL_PIELOU -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --p-metric pielou_e --o-alpha-diversity pielou_index_full.qza" >> _01_qiime2_alpha_diversity_full.sh
 echo "qsub -V -b y -j y -cwd -N Q2_FULL_SIMPSON -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --p-metric simpson --o-alpha-diversity simpson_index_full.qza" >> _01_qiime2_alpha_diversity_full.sh
 echo "qsub -V -b y -j y -cwd -N Q2_FULL_OBSOTUS -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --p-metric observed_features --o-alpha-diversity observed_features_full.qza" >> _01_qiime2_alpha_diversity_full.sh
 echo "qsub -V -b y -j y -cwd -N Q2_FULL_DOMINANCE -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --p-metric dominance --o-alpha-diversity dominance_index_full.qza" >> _01_qiime2_alpha_diversity_full.sh
 echo "qsub -V -b y -j y -cwd -N Q2_FULL_ENSPIE -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --p-metric enspie --o-alpha-diversity enspie_index_full.qza" >> _01_qiime2_alpha_diversity_full.sh
+
 echo "qsub -V -b y -j y -cwd -N Q2_FULL_VISUAL_FAITH -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity alpha_diversity_full/faith_pd_vector.qza --m-metadata-file ../../metadata.tsv --o-visualization faith_pd_summarized_full.qzv" >  _02_qiime2_alpha_diversity_visual.sh
 echo "qsub -V -b y -j y -cwd -N Q2_FULL_VISUAL_SHANNON -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity alpha_diversity_full/shannon_vector.qza --m-metadata-file ../../metadata.tsv --o-visualization shannon_vector_summarized_full.qzv" >> _02_qiime2_alpha_diversity_visual.sh
 echo "qsub -V -b y -j y -cwd -N Q2_FULL_VISUAL_PIELOU -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity pielou_index_full.qza --m-metadata-file ../../metadata.tsv --o-visualization pielou_index_full.qzv" >> _02_qiime2_alpha_diversity_visual.sh
@@ -222,6 +239,42 @@ echo "qsub -V -b y -j y -cwd -N Q2_FULL_VISUAL_SIMPSON -q all.q@obelix05,all.q@o
 echo "qsub -V -b y -j y -cwd -N Q2_FULL_VISUAL_OBSOTUS -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity observed_features_full.qza --m-metadata-file ../../metadata.tsv --o-visualization observed_features_full.qzv" >> _02_qiime2_alpha_diversity_visual.sh
 echo "qsub -V -b y -j y -cwd -N Q2_FULL_VISUAL_DOMINANCE -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity dominance_index_full.qza --m-metadata-file ../../metadata.tsv --o-visualization dominance_index_full.qzv" >> _02_qiime2_alpha_diversity_visual.sh
 echo "qsub -V -b y -j y -cwd -N Q2_FULL_VISUAL_ENSPIE -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity enspie_index_full.qza --m-metadata-file ../../metadata.tsv --o-visualization enspie_index_full.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+
+for i in {1..7};
+do
+    mkdir -p "lvl_${i}"
+    mkdir -p "lvl_${i}/raw"
+    mkdir -p "lvl_${i}/clean"
+
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_SHANNON_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/01-Full/raw/collapsed_raw_full_table_lvl_${i}.qza --p-metric shannon --o-alpha-diversity lvl_${i}/raw/shannon_index_full_lvl${i}_raw.qza" >> _01_qiime2_alpha_diversity_full.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_PIELOU_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/01-Full/raw/collapsed_raw_full_table_lvl_${i}.qza --p-metric pielou_e --o-alpha-diversity lvl_${i}/raw/pielou_index_full_lvl${i}_raw.qza" >> _01_qiime2_alpha_diversity_full.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_SIMPSON_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/01-Full/raw/collapsed_raw_full_table_lvl_${i}.qza --p-metric simpson --o-alpha-diversity lvl_${i}/raw/simpson_index_full_lvl${i}_raw.qza" >> _01_qiime2_alpha_diversity_full.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_OBSOTUS_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/01-Full/raw/collapsed_raw_full_table_lvl_${i}.qza --p-metric observed_features --o-alpha-diversity lvl_${i}/raw/observed_features_full_lvl${i}_raw.qza" >> _01_qiime2_alpha_diversity_full.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_DOMINANCE_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/01-Full/raw/collapsed_raw_full_table_lvl_${i}.qza --p-metric dominance --o-alpha-diversity lvl_${i}/raw/dominance_index_full_lvl${i}_raw.qza" >> _01_qiime2_alpha_diversity_full.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_ENSPIE_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/01-Full/raw/collapsed_raw_full_table_lvl_${i}.qza --p-metric enspie --o-alpha-diversity lvl_${i}/raw/enspie_index_full_lvl${i}_raw.qza" >> _01_qiime2_alpha_diversity_full.sh
+
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_SHANNON_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/01-Full/clean/collapsed_clean_full_table_lvl_${i}.qza --p-metric shannon --o-alpha-diversity lvl_${i}/clean/shannon_index_full_lvl${i}_clean.qza" >> _01_qiime2_alpha_diversity_full.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_PIELOU_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/01-Full/clean/collapsed_clean_full_table_lvl_${i}.qza --p-metric pielou_e --o-alpha-diversity lvl_${i}/clean/pielou_index_full_lvl${i}_clean.qza" >> _01_qiime2_alpha_diversity_full.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_SIMPSON_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/01-Full/clean/collapsed_clean_full_table_lvl_${i}.qza --p-metric simpson --o-alpha-diversity lvl_${i}/clean/simpson_index_full_lvl${i}_clean.qza" >> _01_qiime2_alpha_diversity_full.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_OBSOTUS_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/01-Full/clean/collapsed_clean_full_table_lvl_${i}.qza --p-metric observed_features --o-alpha-diversity lvl_${i}/clean/observed_features_full_lvl${i}_clean.qza" >> _01_qiime2_alpha_diversity_full.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_DOMINANCE_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/01-Full/clean/collapsed_clean_full_table_lvl_${i}.qza --p-metric dominance --o-alpha-diversity lvl_${i}/clean/dominance_index_full_lvl${i}_clean.qza" >> _01_qiime2_alpha_diversity_full.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_ENSPIE_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/01-Full/clean/collapsed_clean_full_table_lvl_${i}.qza --p-metric enspie --o-alpha-diversity lvl_${i}/clean/enspie_index_full_lvl${i}_clean.qza" >> _01_qiime2_alpha_diversity_full.sh
+
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_VISUAL_SHANNON_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/raw/shannon_index_full_lvl${i}_raw.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/raw/shannon_vector_summarized_full_lvl${i}_raw.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_VISUAL_PIELOU_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/raw/pielou_index_full_lvl${i}_raw.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/raw/pielou_index_full_lvl${i}_raw.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_VISUAL_SIMPSON_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/raw/simpson_index_full_lvl${i}_raw.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/raw/simpson_index_full_lvl${i}_raw.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_VISUAL_OBSOTUS_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/raw/observed_features_full_lvl${i}_raw.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/raw/observed_features_full_lvl${i}_raw.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_VISUAL_DOMINANCE_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/raw/dominance_index_full_lvl${i}_raw.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/raw/dominance_index_full_lvl${i}_raw.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_VISUAL_ENSPIE_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/raw/enspie_index_full_lvl${i}_raw.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/raw/enspie_index_full_lvl${i}_raw.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_VISUAL_SHANNON_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/clean/shannon_index_full_lvl${i}_clean.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/clean/shannon_vector_summarized_full_lvl${i}_clean.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_VISUAL_PIELOU_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/clean/pielou_index_full_lvl${i}_clean.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/clean/pielou_index_full_lvl${i}_clean.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_VISUAL_SIMPSON_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/clean/simpson_index_full_lvl${i}_clean.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/clean/simpson_index_full_lvl${i}_clean.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_VISUAL_OBSOTUS_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/clean/observed_features_full_lvl${i}_clean.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/clean/observed_features_full_lvl${i}_clean.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_VISUAL_DOMINANCE_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/clean/dominance_index_full_lvl${i}_clean.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/clean/dominance_index_full_lvl${i}_clean.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_VISUAL_ENSPIE_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/clean/enspie_index_full_lvl${i}_clean.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/clean/enspie_index_full_lvl${i}_clean.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+
+done
 
 # 12-qiime2_diversity/02-Filtered
 # Calculates the diversity parameters for the filtered table using the phylogeny
@@ -233,6 +286,7 @@ echo "qsub -V -b y -j y -cwd -N Q2_FILT_SIMPSON -q all.q@obelix05,all.q@obelix06
 echo "qsub -V -b y -j y -cwd -N Q2_FILT_OBSOTUS -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --p-metric observed_features --o-alpha-diversity observed_features_filtered.qza" >> _01_qiime2_alpha_diversity_filtered.sh
 echo "qsub -V -b y -j y -cwd -N Q2_FILT_DOMINANCE -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --p-metric dominance --o-alpha-diversity dominance_index_filtered.qza" >> _01_qiime2_alpha_diversity_filtered.sh
 echo "qsub -V -b y -j y -cwd -N Q2_FILT_ENSPIE -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --p-metric enspie --o-alpha-diversity enspie_index_filtered.qza" >> _01_qiime2_alpha_diversity_filtered.sh
+
 echo "qsub -V -b y -j y -cwd -N Q2_FILT_VISUAL_FAITH -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity alpha_diversity_filtered/faith_pd_vector.qza --m-metadata-file ../../metadata.tsv --o-visualization faith_pd_summarized_filtered.qzv" >  _02_qiime2_alpha_diversity_visual.sh
 echo "qsub -V -b y -j y -cwd -N Q2_FILT_VISUAL_SHANNON -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity alpha_diversity_filtered/shannon_vector.qza --m-metadata-file ../../metadata.tsv --o-visualization shannon_vector_summarized_filtered.qzv" >> _02_qiime2_alpha_diversity_visual.sh
 echo "qsub -V -b y -j y -cwd -N Q2_FILT_VISUAL_PIELOU -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity pielou_index_filtered.qza --m-metadata-file ../../metadata.tsv --o-visualization pielou_index_filtered.qzv" >> _02_qiime2_alpha_diversity_visual.sh
@@ -241,13 +295,52 @@ echo "qsub -V -b y -j y -cwd -N Q2_FILT_VISUAL_OBSOTUS -q all.q@obelix05,all.q@o
 echo "qsub -V -b y -j y -cwd -N Q2_FILT_VISUAL_DOMINANCE -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity dominance_index_filtered.qza --m-metadata-file ../../metadata.tsv --o-visualization dominance_index_filtered.qzv" >> _02_qiime2_alpha_diversity_visual.sh
 echo "qsub -V -b y -j y -cwd -N Q2_FILT_VISUAL_ENSPIE -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity enspie_index_filtered.qza --m-metadata-file ../../metadata.tsv --o-visualization enspie_index_filtered.qzv" >> _02_qiime2_alpha_diversity_visual.sh
 
+for i in {1..7};
+do
+    mkdir -p "lvl_${i}"
+    mkdir -p "lvl_${i}/raw"
+    mkdir -p "lvl_${i}/clean"
+
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_SHANNON_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/02-Filtered/raw/collapsed_raw_filt_table_lvl_${i}.qza --p-metric shannon --o-alpha-diversity lvl_${i}/raw/shannon_index_filt_lvl${i}_raw.qza" >> _01_qiime2_alpha_diversity_filt.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_PIELOU_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/02-Filtered/raw/collapsed_raw_filt_table_lvl_${i}.qza --p-metric pielou_e --o-alpha-diversity lvl_${i}/raw/pielou_index_filt_lvl${i}_raw.qza" >> _01_qiime2_alpha_diversity_filt.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_SIMPSON_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/02-Filtered/raw/collapsed_raw_filt_table_lvl_${i}.qza --p-metric simpson --o-alpha-diversity lvl_${i}/raw/simpson_index_filt_lvl${i}_raw.qza" >> _01_qiime2_alpha_diversity_filt.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_OBSOTUS_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/02-Filtered/raw/collapsed_raw_filt_table_lvl_${i}.qza --p-metric observed_features --o-alpha-diversity lvl_${i}/raw/observed_features_filt_lvl${i}_raw.qza" >> _01_qiime2_alpha_diversity_filt.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_DOMINANCE_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/02-Filtered/raw/collapsed_raw_filt_table_lvl_${i}.qza --p-metric dominance --o-alpha-diversity lvl_${i}/raw/dominance_index_filt_lvl${i}_raw.qza" >> _01_qiime2_alpha_diversity_filt.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_ENSPIE_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/02-Filtered/raw/collapsed_raw_filt_table_lvl_${i}.qza --p-metric enspie --o-alpha-diversity lvl_${i}/raw/enspie_index_filt_lvl${i}_raw.qza" >> _01_qiime2_alpha_diversity_filt.sh
+
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_SHANNON_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/02-Filtered/clean/collapsed_clean_filt_table_lvl_${i}.qza --p-metric shannon --o-alpha-diversity lvl_${i}/clean/shannon_index_filt_lvl${i}_clean.qza" >> _01_qiime2_alpha_diversity_filt.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_PIELOU_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/02-Filtered/clean/collapsed_clean_filt_table_lvl_${i}.qza --p-metric pielou_e --o-alpha-diversity lvl_${i}/clean/pielou_index_filt_lvl${i}_clean.qza" >> _01_qiime2_alpha_diversity_filt.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_SIMPSON_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/02-Filtered/clean/collapsed_clean_filt_table_lvl_${i}.qza --p-metric simpson --o-alpha-diversity lvl_${i}/clean/simpson_index_filt_lvl${i}_clean.qza" >> _01_qiime2_alpha_diversity_filt.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_OBSOTUS_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/02-Filtered/clean/collapsed_clean_filt_table_lvl_${i}.qza --p-metric observed_features --o-alpha-diversity lvl_${i}/clean/observed_features_filt_lvl${i}_clean.qza" >> _01_qiime2_alpha_diversity_filt.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_DOMINANCE_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/02-Filtered/clean/collapsed_clean_filt_table_lvl_${i}.qza --p-metric dominance --o-alpha-diversity lvl_${i}/clean/dominance_index_filt_lvl${i}_clean.qza" >> _01_qiime2_alpha_diversity_filt.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_ENSPIE_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha --i-table ../../09-qiime2_collapse_numbers/02-Filtered/clean/collapsed_clean_filt_table_lvl_${i}.qza --p-metric enspie --o-alpha-diversity lvl_${i}/clean/enspie_index_filt_lvl${i}_clean.qza" >> _01_qiime2_alpha_diversity_filt.sh
+
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_VISUAL_SHANNON_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/raw/shannon_index_filt_lvl${i}_raw.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/raw/shannon_vector_summarized_filt_lvl${i}_raw.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_VISUAL_PIELOU_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/raw/pielou_index_filt_lvl${i}_raw.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/raw/pielou_index_filt_lvl${i}_raw.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_VISUAL_SIMPSON_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/raw/simpson_index_filt_lvl${i}_raw.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/raw/simpson_index_filt_lvl${i}_raw.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_VISUAL_OBSOTUS_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/raw/observed_features_filt_lvl${i}_raw.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/raw/observed_features_filt_lvl${i}_raw.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_VISUAL_DOMINANCE_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/raw/dominance_index_filt_lvl${i}_raw.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/raw/dominance_index_filt_lvl${i}_raw.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_VISUAL_ENSPIE_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/raw/enspie_index_filt_lvl${i}_raw.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/raw/enspie_index_filt_lvl${i}_raw.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_VISUAL_SHANNON_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/clean/shannon_index_filt_lvl${i}_clean.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/clean/shannon_vector_summarized_filt_lvl${i}_clean.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_VISUAL_PIELOU_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/clean/pielou_index_filt_lvl${i}_clean.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/clean/pielou_index_filt_lvl${i}_clean.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_VISUAL_SIMPSON_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/clean/simpson_index_filt_lvl${i}_clean.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/clean/simpson_index_filt_lvl${i}_clean.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_VISUAL_OBSOTUS_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/clean/observed_features_filt_lvl${i}_clean.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/clean/observed_features_filt_lvl${i}_clean.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_VISUAL_DOMINANCE_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/clean/dominance_index_filt_lvl${i}_clean.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/clean/dominance_index_filt_lvl${i}_clean.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_VISUAL_ENSPIE_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-group-significance --i-alpha-diversity lvl_${i}/clean/enspie_index_filt_lvl${i}_clean.qza --m-metadata-file ../../metadata.tsv --o-visualization lvl_${i}/clean/enspie_index_filt_lvl${i}_clean.qzv" >> _02_qiime2_alpha_diversity_visual.sh
+
+done
+
+
 # 13-qiime2_rarefaction/01-Full
+# As it requires phylogeny, cant be applied to collapsed tables
 # Calculates the rarefaction curve for the full (unfiltered) table
 # Must be provided with a number for max-depth, extracted from the full summarized table
 # conda activate qiime2021.2
 echo "qsub -V -b y -j y -cwd -N Q2_RAREFACTION_FULL -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime diversity alpha-rarefaction --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --i-phylogeny ../../11-qiime2_phylogeny/01-Full/rooted_tree_full.qza --p-max-depth $1 --p-metrics shannon faith_pd pielou_e simpson observed_features dominance enspie --m-metadata-file ../../metadata.tsv --o-visualization alpha_rarefaction_full.qzv" > _01_qiime2_alpha_rarefaction.sh
 
 # 13-qiime2_rarefaction/02-Filtered
+# As it requires phylogeny, cant be applied to collapsed tables
 # Calculates the rarefaction curve for the full (unfiltered) table
 # Must be provided with a number for max-depth, extracted from the filtered summarized table
 # conda activate qiime2021.2
@@ -259,47 +352,83 @@ head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V
 for i in {1..7};
 do
     mkdir -p "lvl_${i}"
-    echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_FULL_HIERARCHY_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime gneiss correlation-clustering --i-table ../../10-qiime2_absoluteNumbers/01-Full/lvl_${i}/collapsed_raw_full_table_lvl_${i}.qza --o-clustering lvl_${i}/hierarchy_full_${i}.qza" >> _01_qiime_gneiss_build_hierarchy_full.sh
-    head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_DEND_FULL_%_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime gneiss dendrogram-heatmap --i-table ../../10-qiime2_absoluteNumbers/01-Full/lvl_${i}/collapsed_raw_full_table_lvl_${i}.qza --i-tree lvl_${i}/hierarchy_full_${i}.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --p-color-map seismic --o-visualization lvl_${i}/heatmap_%_full_lvl_${i}.qzv" >> _02_qiime_gneiss_heatmap_full.sh
+    mkdir -p "lvl_${i}/raw"
+    mkdir -p "lvl_${i}/clean"
+    
+    echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_FULL_HIERARCHY_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime gneiss correlation-clustering --i-table ../../10-qiime2_absoluteNumbers/01-Full/lvl_${i}/raw/collapsed_raw_full_table_lvl_${i}.qza --o-clustering lvl_${i}/raw/hierarchy_raw_full_lvl_${i}.qza" >> _01_qiime_gneiss_build_hierarchy_full.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_FULL_HIERARCHY_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime gneiss correlation-clustering --i-table ../../10-qiime2_absoluteNumbers/01-Full/lvl_${i}/clean/collapsed_clean_full_table_lvl_${i}.qza --o-clustering lvl_${i}/clean/hierarchy_clean_full_lvl_${i}.qza" >> _01_qiime_gneiss_build_hierarchy_full.sh
+
+    head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_DEND_FULL_%_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime gneiss dendrogram-heatmap --i-table ../../10-qiime2_absoluteNumbers/01-Full/lvl_${i}/raw/collapsed_raw_full_table_lvl_${i}.qza --i-tree lvl_${i}/raw/hierarchy_raw_full_lvl_${i}.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --p-color-map seismic --o-visualization lvl_${i}/raw/heatmap_%_raw_full_lvl_${i}.qzv" >> _02_qiime_gneiss_heatmap_full.sh
+    head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_DEND_FULL_%_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime gneiss dendrogram-heatmap --i-table ../../10-qiime2_absoluteNumbers/01-Full/lvl_${i}/clean/collapsed_clean_full_table_lvl_${i}.qza --i-tree lvl_${i}/clean/hierarchy_clean_full_lvl_${i}.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --p-color-map seismic --o-visualization lvl_${i}/clean/heatmap_%_clean_full_lvl_${i}.qzv" >> _02_qiime_gneiss_heatmap_full.sh
+
 done
 
 # 14-qiime2_gneiss_differential_abundance/02-Filtered
-echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_FILT_HIERARCHY -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime gneiss correlation-clustering --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --o-clustering hierarchy_filtered.qza" > _01_qiime_gneiss_build_hierarchy_filt.sh
-head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_FILT_% -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime gneiss dendrogram-heatmap --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --i-tree hierarchy_filtered.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --p-color-map seismic --o-visualization heatmap_%_filtered.qzv" > _02_qiime_gneiss_heatmap_filt.sh
+echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_FILT_HIERARCHY -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime gneiss correlation-clustering --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --o-clustering hierarchy_full.qza" > _01_qiime_gneiss_build_hierarchy_full.sh
+head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_DEND_FULL_% -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime gneiss dendrogram-heatmap --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --i-tree hierarchy_full.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --p-color-map seismic --o-visualization heatmap_%_full.qzv" > _02_qiime_gneiss_heatmap_full.sh
 for i in {1..7};
 do
     mkdir -p "lvl_${i}"
-    echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_FILT_HIERARCHY_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime gneiss correlation-clustering --i-table ../../10-qiime2_absoluteNumbers/02-Filtered/lvl_${i}/collapsed_raw_filt_table_lvl_${i}.qza --o-clustering lvl_${i}/hierarchy_filt_${i}.qza" >> _01_qiime_gneiss_build_hierarchy_filt.sh
-    head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_DEND_FILT_%_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime gneiss dendrogram-heatmap --i-table ../../10-qiime2_absoluteNumbers/02-Filtered/lvl_${i}/collapsed_raw_filt_table_lvl_${i}.qza --i-tree lvl_${i}/hierarchy_filt_${i}.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --p-color-map seismic --o-visualization lvl_${i}/heatmap_%_filt_lvl_${i}.qzv" >> _02_qiime_gneiss_heatmap_filt.sh
+    mkdir -p "lvl_${i}/raw"
+    mkdir -p "lvl_${i}/clean"
+    
+    echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_FILT_HIERARCHY_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime gneiss correlation-clustering --i-table ../../10-qiime2_absoluteNumbers/02-Filtered/lvl_${i}/raw/collapsed_raw_filt_table_lvl_${i}.qza --o-clustering lvl_${i}/raw/hierarchy_raw_filt_lvl_${i}.qza" >> _01_qiime_gneiss_build_hierarchy_full.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_FILT_HIERARCHY_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime gneiss correlation-clustering --i-table ../../10-qiime2_absoluteNumbers/02-Filtered/lvl_${i}/clean/collapsed_clean_filt_table_lvl_${i}.qza --o-clustering lvl_${i}/clean/hierarchy_clean_filt_lvl_${i}.qza" >> _01_qiime_gneiss_build_hierarchy_full.sh
+
+    head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_DEND_FILT_%_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime gneiss dendrogram-heatmap --i-table ../../10-qiime2_absoluteNumbers/02-Filtered/lvl_${i}/raw/collapsed_raw_filt_table_lvl_${i}.qza --i-tree lvl_${i}/raw/hierarchy_raw_filt_lvl_${i}.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --p-color-map seismic --o-visualization lvl_${i}/raw/heatmap_%_raw_filt_lvl_${i}.qzv" >> _02_qiime_gneiss_heatmap_full.sh
+    head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_GNEISS_DEND_FILT_%_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime gneiss dendrogram-heatmap --i-table ../../10-qiime2_absoluteNumbers/02-Filtered/lvl_${i}/clean/collapsed_clean_filt_table_lvl_${i}.qza --i-tree lvl_${i}/clean/hierarchy_clean_filt_lvl_${i}.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --p-color-map seismic --o-visualization lvl_${i}/clean/heatmap_%_clean_filt_lvl_${i}.qzv" >> _02_qiime_gneiss_heatmap_full.sh
+
 done
 
 # 15-qiime2_ANCOM/01-Full
 ln -s /data/bi/pipelines/16S-Qiime-protocol/Identify_ANCOM.py Identify_ANCOM.py
 echo "qsub -V -b y -j y -cwd -N Q2_FULL_PSEUDOCOUNT -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition add-pseudocount --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --o-composition-table composition_table_full.qza" > _01_qiime_pseudocount_full.sh
 head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FULL_% -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition ancom --i-table composition_table_full.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization ancom_%_full.qzv" > _02_qiime_ancom_full.sh
+
 head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_EXPORT_ANCOM_% -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime tools export --input-path ancom_%_full.qzv --output-path ancom_%_full_dir" > _03_qiime_export_ancom_full.sh
 head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N PY_GENERATE_ANCOM_RESULTS -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 python3 Identify_ANCOM.py --taxonomy ../../07-qiime2_taxonomy/taxonomy_table/taxonomy.tsv --data ancom_%_full_dir/data.tsv --ancom ancom_%_full_dir/ancom.tsv --percent-abundances ancom_%_full_dir/percent-abundances.tsv" > _04_python_get_full_abundance_tables.sh 
+
 for i in {1..7};
 do
     mkdir -p "lvl_${i}"
-    echo "qsub -V -b y -j y -cwd -N Q2_FULL_PSEUDOCOUNT_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition add-pseudocount --i-table ../../10-qiime2_absoluteNumbers/01-Full/lvl_${i}/collapsed_raw_full_table_lvl_${i}.qza --o-composition-table lvl_${i}/composition_table_full_${i}.qza" >> _01_qiime_pseudocount_full.sh
-    head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FULL_%_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition ancom --i-table lvl_${i}/composition_table_full_${i}.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization lvl_${i}/ancom_%_full_${i}.qzv" >> _02_qiime_ancom_full.sh    
-done
+    mkdir -p "lvl_${i}/raw"
+    mkdir -p "lvl_${i}/clean"
 
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_PSEUDOCOUNT_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition add-pseudocount --i-table ../../10-qiime2_absoluteNumbers/01-Full/lvl_${i}/raw/collapsed_raw_full_table_lvl_${i}.qza --o-composition-table lvl_${i}/raw/composition_table_raw_full_${i}.qza" >> _01_qiime_pseudocount_full.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FULL_PSEUDOCOUNT_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition add-pseudocount --i-table ../../10-qiime2_absoluteNumbers/01-Full/lvl_${i}/clean/collapsed_clean_full_table_lvl_${i}.qza --o-composition-table lvl_${i}/clean/composition_table_clean_full_${i}.qza" >> _01_qiime_pseudocount_full.sh
+
+    head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FULL_%_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition ancom --i-table lvl_${i}/raw/composition_table_raw_full_${i}.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization lvl_${i}/raw/ancom_%_raw_full_${i}.qzv" >> _02_qiime_ancom_full.sh
+    head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FULL_%_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition ancom --i-table lvl_${i}/clean/composition_table_clean_full_${i}.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization lvl_${i}/clean/ancom_%_clean_full_${i}.qzv" >> _02_qiime_ancom_full.sh    
+    
+    echo "qsub -V -b y -j y -cwd -N PY_FULL_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 python"
+    echo "qsub -V -b y -j y -cwd -N PY_FULL_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 python"
+
+done
 
 # 15-qiime2_ANCOM/02-Filtered 
 ln -s /data/bi/pipelines/16S-Qiime-protocol/Identify_ANCOM.py Identify_ANCOM.py
-echo "qsub -V -b y -j y -cwd -N Q2_FILT_PSEUDOCOUNT -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition add-pseudocount --i-table ../../08-qiime2_filt_mit_chl/feature_table_filtered.qza --o-composition-table composition_table_filt.qza" > _01_qiime_pseudocount_filt.sh
-head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FILT_% -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition ancom --i-table composition_table_filt.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization ancom_%_filt.qzv" > _02_qiime_ancom_filt.sh
-head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_EXPORT_ANCOM_% -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime tools export --input-path ancom_%_filt.qzv --output-path ancom_%_filt_dir" > _03_qiime_export_ancom_filt.sh
-head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N PY_GENERATE_ANCOM_RESULTS -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 python3 Identify_ANCOM.py --taxonomy ../../07-qiime2_taxonomy/taxonomy_table/taxonomy.tsv --data ancom_%_filt_dir/data.tsv --ancom ancom_%_filt_dir/ancom.tsv --percent-abundances ancom_%_filt_dir/percent-abundances.tsv" > _04_python_get_filt_abundance_tables.sh 
+echo "qsub -V -b y -j y -cwd -N Q2_FILT_PSEUDOCOUNT -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition add-pseudocount --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --o-composition-table composition_table_full.qza" > _01_qiime_pseudocount_filt.sh
+head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FULL_% -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition ancom --i-table composition_table_full.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization ancom_%_full.qzv" > _02_qiime_ancom_filt.sh
+
+head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_EXPORT_ANCOM_% -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime tools export --input-path ancom_%_full.qzv --output-path ancom_%_full_dir" > _03_qiime_export_ancom_filt.sh
+head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N PY_GENERATE_ANCOM_RESULTS -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 python3 Identify_ANCOM.py --taxonomy ../../07-qiime2_taxonomy/taxonomy_table/taxonomy.tsv --data ancom_%_full_dir/data.tsv --ancom ancom_%_full_dir/ancom.tsv --percent-abundances ancom_%_full_dir/percent-abundances.tsv" > _04_python_get_full_abundance_tables.sh 
+
 for i in {1..7};
 do
     mkdir -p "lvl_${i}"
-    echo "qsub -V -b y -j y -cwd -N Q2_FILT_PSEUDOCOUNT_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition add-pseudocount --i-table ../../10-qiime2_absoluteNumbers/02-Filtered/lvl_${i}/collapsed_raw_filt_table_lvl_${i}.qza --o-composition-table lvl_${i}/composition_table_filt_${i}.qza" >> _01_qiime_pseudocount_filt.sh
-    head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FULL_%_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition ancom --i-table lvl_${i}/composition_table_filt_${i}.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization lvl_${i}/ancom_%_filt_${i}.qzv" >> _02_qiime_ancom_filt.sh    
-done
+    mkdir -p "lvl_${i}/raw"
+    mkdir -p "lvl_${i}/clean"
 
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_PSEUDOCOUNT_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition add-pseudocount --i-table ../../10-qiime2_absoluteNumbers/02-Filtered/lvl_${i}/raw/collapsed_raw_filt_table_lvl_${i}.qza --o-composition-table lvl_${i}/raw/composition_table_raw_filt_${i}.qza" >> _01_qiime_pseudocount_filt.sh
+    echo "qsub -V -b y -j y -cwd -N Q2_FILT_PSEUDOCOUNT_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition add-pseudocount --i-table ../../10-qiime2_absoluteNumbers/02-Filtered/lvl_${i}/clean/collapsed_clean_filt_table_lvl_${i}.qza --o-composition-table lvl_${i}/clean/composition_table_clean_filt_${i}.qza" >> _01_qiime_pseudocount_filt.sh
+
+    head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FILT_%_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition ancom --i-table lvl_${i}/raw/composition_table_raw_filt_${i}.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization lvl_${i}/raw/ancom_%_raw_filt_${i}.qzv" >> _02_qiime_ancom_filt.sh
+    head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FILT_%_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition ancom --i-table lvl_${i}/clean/composition_table_clean_filt_${i}.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization lvl_${i}/clean/ancom_%_clean_filt_${i}.qzv" >> _02_qiime_ancom_filt.sh    
+
+    echo "qsub -V -b y -j y -cwd -N PY_FILT_PSEUDOCOUNT_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10"
+    echo "qsub -V -b y -j y -cwd -N PY_FILT_PSEUDOCOUNT_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10"
+
+done
 
 # 99-stats
 # bring necessary files
