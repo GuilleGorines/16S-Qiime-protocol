@@ -16,30 +16,19 @@ cat samples_id.txt | xargs -I % printf "%\t$(pwd)/$(date '+%Y%m%d')_ANALYSIS01_1
 # Generates the directory structure for the analysis
 # Generates a symbolic link to the sample-list, named samples directory and manifest
 mkdir 01-fastQC_previous
-
 mkdir 02-cutadapt_remove_primers
-
 mkdir 03-fastp_preprocess
-
 mkdir 04-fastQC_posterior
-
 mkdir 05-qiime2_import
-
 mkdir 06-qiime2_denoise_cluster
-
 mkdir 07-qiime2_taxonomy
-
 mkdir 08-qiime2_filt_mit_chl
-
 mkdir 09-qiime2_collapse_numbers
 mkdir 09-qiime2_collapse_numbers/01-Full
 mkdir 09-qiime2_collapse_numbers/02-Filtered
-
 mkdir 10-qiime2_taxabarplots
-
 mkdir 10-qiime2_taxabarplots/01-Full
 mkdir 10-qiime2_taxabarplots/02-Filtered
-
 mkdir 11-qiime2_phylogeny
 mkdir 11-qiime2_phylogeny/01-Full
 mkdir 11-qiime2_phylogeny/02-Filtered
@@ -133,7 +122,6 @@ echo "qsub -V -b y -j y -cwd -N Q2_REPSEQS_FILT_VISUAL -q all.q@obelix05,all.q@o
 # 09-qiime2_collapse_numbers/01-Full
 # Collapses feature tables to all levels (1-7)
 # conda activate qiime2021.2
-
 ln -s 
 
 |> _01_qiime2_collapse_table.sh
