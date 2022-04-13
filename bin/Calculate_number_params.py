@@ -163,11 +163,11 @@ else:
     df = Artifact.load(args.qza_in).view(pd.DataFrame)
 
     # Save the absolute numbers
-    save_long_wide(df, f"{args.outdir}/raw/absolute_numbers_lvl_{level}_raw")
+    save_long_wide(df, f"{args.outdir}/raw/absolute_numbers_lvl_{args.level}_raw")
 
     # Save the relative numbers
     rel_df = relative_abundances(df)
-    save_long_wide(rel_df, f"{args.outdir}/raw/relative_numbers_lvl_{level}_raw")
+    save_long_wide(rel_df, f"{args.outdir}/raw/relative_numbers_lvl_{args.level}_raw")
 
     # Read metadata
     metadata = pd.read_csv(
@@ -189,10 +189,10 @@ else:
     artifact_from_df(clean_df, artifact_name)
 
     # Save the asbsolute and relative numbers for the clean table
-    save_long_wide(clean_df, f"{args.outdir}/clean/absolute_numbers_lvl_{level}_clean")
+    save_long_wide(clean_df, f"{args.outdir}/clean/absolute_numbers_lvl_{args.level}_clean")
 
     rel_clean_df = relative_abundances(clean_df)
-    save_long_wide(rel_clean_df, f"{args.outdir}/clean/relative_numbers_lvl_{level}_clean")
+    save_long_wide(rel_clean_df, f"{args.outdir}/clean/relative_numbers_lvl_{args.level}_clean")
 
     # Prevalences for the clean table
     os.mkdir(f"{args.outdir}/clean/Prevalences")
