@@ -124,7 +124,7 @@ echo "qsub -V -b y -j y -cwd -N Q2_TAX_EXPORT -q all.q@obelix05,all.q@obelix06,a
 # Filter mitochondria and chloroplast from the feature table and rep-seqs
 # Generate the visual files for the created objects: filtered feature table, summarized filtered feature table, filtered rep seqs 
 # conda activate qiime2021.2
-echo "qsub -V -b y -j y -cwd -N Q2_FILTER -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime taxa filter-table --i-table ../06-qiime2_denoise_cluster/feature_table_full.qza --i-taxonomy ../07-qiime2_taxonomy/taxonomy.qza --p-exclude mitochondria,chloroplast --o-filtered-table feature_table_filtered.qza" > _01_qiime2_filter_table_repseqs.sh
+echo "qsub -V -b y -j y -cwd -N Q2_FTABLE_FILTER -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime taxa filter-table --i-table ../06-qiime2_denoise_cluster/feature_table_full.qza --i-taxonomy ../07-qiime2_taxonomy/taxonomy.qza --p-exclude mitochondria,chloroplast --o-filtered-table feature_table_filtered.qza" > _01_qiime2_filter_table_repseqs.sh
 echo "qsub -V -b y -j y -cwd -N Q2_REPSEQS_FILT -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime taxa filter-seqs --i-sequences ../06-qiime2_denoise_cluster/rep_seqs_full.qza --i-taxonomy ../07-qiime2_taxonomy/taxonomy.qza --p-exclude mitochondria,chloroplast --o-filtered-sequences rep_seqs_filtered.qza" >> _01_qiime2_filter_table_repseqs.sh
 echo "qsub -V -b y -j y -cwd -N Q2_FTABLE_FILT_VISUAL -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime metadata tabulate --m-input-file feature_table_filtered.qza --o-visualization feature_table_filtered.qzv" > _02_qiime2_filtered_visualfiles.sh
 echo "qsub -V -b y -j y -cwd -N Q2_FTABLE_FILT_SUMM_VISUAL -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime feature-table summarize --i-table feature_table_filtered.qza --o-visualization feature_table_filtered_summarized.qzv --m-sample-metadata-file ../metadata.tsv" >> _02_qiime2_filtered_visualfiles.sh
@@ -400,8 +400,8 @@ do
     head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FULL_%_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition ancom --i-table lvl_${i}/raw/composition_table_raw_full_${i}.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization lvl_${i}/raw/ancom_%_raw_full_${i}.qzv" >> _02_qiime_ancom_full.sh
     head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FULL_%_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition ancom --i-table lvl_${i}/clean/composition_table_clean_full_${i}.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization lvl_${i}/clean/ancom_%_clean_full_${i}.qzv" >> _02_qiime_ancom_full.sh    
     
-    echo "qsub -V -b y -j y -cwd -N PY_FULL_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 python"
-    echo "qsub -V -b y -j y -cwd -N PY_FULL_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 python"
+    head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N PY_DENDROGRAM_FULL_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 python"
+    head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N PY_FULL_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 python"
 
 done
 
@@ -425,14 +425,14 @@ do
     head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FILT_%_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition ancom --i-table lvl_${i}/raw/composition_table_raw_filt_${i}.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization lvl_${i}/raw/ancom_%_raw_filt_${i}.qzv" >> _02_qiime_ancom_filt.sh
     head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FILT_%_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition ancom --i-table lvl_${i}/clean/composition_table_clean_filt_${i}.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization lvl_${i}/clean/ancom_%_clean_filt_${i}.qzv" >> _02_qiime_ancom_filt.sh    
 
-    echo "qsub -V -b y -j y -cwd -N PY_FILT_PSEUDOCOUNT_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10"
-    echo "qsub -V -b y -j y -cwd -N PY_FILT_PSEUDOCOUNT_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10"
+    head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N PY_FILT_PSEUDOCOUNT_RAW_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 "
+    head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N PY_FILT_PSEUDOCOUNT_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10"
 
 done
 
 # 99-stats
 # bring necessary files
-ln -s /data/bi/pipelines/16S-Qiime-protocol/process_table.py 
+ln -s /data/bi/pipelines/16S-Qiime-protocol/generate_read_balance.py .
 ln -s ../01-fastQC_previous .
 ln -s ../02-cutadapt_remove_primers .
 ln -s ../03-fastp_preprocess .
