@@ -1,6 +1,33 @@
 import argparse
 
 import pandas as pd
+from qiime2 import Visualization
+
+ def export_qzv(qzv_in, tmpdir):
+    # export qzv to a tmp dir
+    # get the needed dataframes
+    # remove the tmp dir
+    qzv = Visualization.load(qzv_in)
+    qzv.export_data(tmpdir)
+    
+    # ancom table
+    df_ancom = pd.read_csv(f"{tmpdir}/ancom.tsv", sep="\t", index_col=0)
+    
+    # Data table
+    df_data = pd.read_csv(f"{tmpdir}/data.tsv", sep="\t", index_col=0)
+    
+    # Add extra row to avoid NAs
+    df_data.loc["Group"] = 2 * ["-"]
+    
+    # remove the "w"
+    df_ancom.drop(["W"], axis=1, inplace=True)
+
+    # Percent abundances
+    df_percent_abundances = pd.read_csv(f"{tmpdir}/percent-abundances.tsv", sep = "\t", index_col=0)
+
+    shutil.rmtree(tmpdir)
+
+    return df_ancom, df_data, df_percent_abundances
 
 
 parser = argparse.ArgumentParser(description='Generate the abundances and prevalences from the qza feature table')
