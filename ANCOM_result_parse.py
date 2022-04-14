@@ -16,5 +16,4 @@ args = parser.parse_args()
 
 mode_directory = "01-Full" if args.mode == "full" else "02-Filtered"
 
-
 rel_abundances_path = f"../../09-qiime2_collapse_numbers/{mode_directory}/{args.state}/lvl_{args.level}/{args.state}/relative_numbers_lvl_{args.level}_{args.state}_long.tsv"
