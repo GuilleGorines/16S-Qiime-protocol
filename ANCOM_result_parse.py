@@ -57,7 +57,7 @@ def get_significative_taxa(df):
         print("No significative data found.")
         return None
     else:
-        return significative_taxa
+        return list(significative_taxa)
 
 parser = argparse.ArgumentParser(description='Generate the abundances and prevalences from the qza feature table')
 parser.add_argument('--qzv-in'         , help='feature table in qza format', dest="qzv_in", required=True)
