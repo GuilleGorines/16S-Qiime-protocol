@@ -95,10 +95,10 @@ significative_taxa = get_significative_taxa(df_out_1)
 rel_abs_df = pd.read_csv(args.relfreq_in, header=0, index_col=0, delimiter="\t")
 
 # Import metadata
-column_df = pd.read_csv(args.metadata, header=0, index_col=0, delimiter="\t").pop(args.metadata_column)
+column_df = pd.DataFrame(pd.read_csv(args.metadata, header=0, index_col=0, delimiter="\t").pop(args.metadata_column)).transpose()
 
 # Second file generated: ancom with the relative frequence
-df_out_2 = pd.concat([df_ancom, df_data, pd.concat([pd.DataFrame(column_df).transpose(), rel_abs_df], axis=0)], axis=1)
+df_out_2 = pd.concat([df_ancom, df_data, pd.concat([column_df, rel_abs_df], axis=0)], axis=1)
 save_long_wide(df_out_2, f"lvl_{args.level}/{args.state}/ancom_result_w_rel_freq_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}", "taxa", "ancom-relfreq")
 
 # if there are any significative taxa
