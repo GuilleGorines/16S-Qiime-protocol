@@ -372,7 +372,7 @@ ln -s /data/bi/pipelines/16S-Qiime-protocol/Identify_ANCOM.py Identify_ANCOM.py
 
 echo "qsub -V -b y -j y -cwd -N Q2_FULL_PSEUDOCOUNT -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition add-pseudocount --i-table ../../06-qiime2_denoise_cluster/feature_table_full.qza --o-composition-table composition_table_full.qza" > _01_qiime_pseudocount_full.sh
 head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N Q2_ANCOM_FULL_% -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 qiime composition ancom --i-table composition_table_full.qza --m-metadata-file ../../metadata.tsv --m-metadata-column % --o-visualization ancom_%_full.qzv" > _02_qiime_ancom_full.sh
-head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N PY_DENDROGRAM -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 python3 Identify_ANCOM.py --taxonomy ../../07-qiime2_taxonomy/taxonomy_table/taxonomy.tsv --data ancom_%_full_dir/data.tsv --ancom ancom_%_full_dir/ancom.tsv --percent-abundances ancom_%_full_dir/percent-abundances.tsv" > _03_python_dendrogram_full.sh 
+head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N PY_DENDROGRAM -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 python ANCOM_result_parse_uncollapsed.py --qza-taxonomy ../../07-qiime2_taxonomy/ --qzv-ancom ancom_%_full.qzv --mode full --metadata ../../metadata.tsv --metadata-column % --rel-freq-file  " > _03_python_dendrogram_full.sh 
 
 for i in {1..7};
 do
@@ -390,8 +390,6 @@ do
     head -n 1 ../../metadata.tsv | xargs -n1 | tail -n +2 | xargs -I % echo "qsub -V -b y -j y -cwd -N PY_DENDROGRAM_FULL_CLEAN_${i} -q all.q@obelix05,all.q@obelix06,all.q@obelix07,all.q@obelix08,all.q@obelix09,all.q@obelix10 python ANCOM_results_parse.py --qzv-in lvl_${i}/raw/ancom_%_raw_full_${i}.qzv --metadata-file ../../metadata.tsv --metadata-column % --mode full --state clean --level ${i} --rel-freq-file ../../09-qiime2_collapse_numbers/01-Full/lvl_${i}/clean/relative_numbers_lvl_${i}_clean_long.tsv" >> _03_python_dendrogram_full.sh
     
 done
-
-
 
 
 # 15-qiime2_ANCOM/02-Filtered 
