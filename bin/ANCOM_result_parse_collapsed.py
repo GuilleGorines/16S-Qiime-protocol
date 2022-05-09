@@ -62,7 +62,7 @@ def get_significative_taxa(df):
     significative_taxa = df[df["Reject null hypothesis"] == True].index
 
     if len(significative_taxa) == 0:
-        print(f"{args.mode}, {args.state}, lvl {args.level}: no significative data found.")
+        print(f"{args.mode}, {args.state}, lvl {args.level}, category {args.metadata_column}: no significative data found.")
         return None
     else:
         return list(significative_taxa)
@@ -119,40 +119,71 @@ if significative_taxa is not None:
     namedict = { row : newname for row, newname in zip(rownames, newnames)}
     
     figure_df = sig_tax_abundances.rename(index=namedict)
-    
+
     # associate color code to metadata
     color_codes = dict(zip(column_df.squeeze().unique(), ["#00AA5A", "#C0AB52", "#E16A86",  "#00A6CA",  "#C699E7", "#9A9A9A", "#65B891", "#F7934C", "#0B4F6C", "#F2E2D2", "#E1CE7A", "#646536", "#FFDD4A", "#EF3054", "#3D314A"]))
     col_colors = column_df.squeeze().map(color_codes)
     
-    figure = sns.clustermap(figure_df,
-                  col_colors=col_colors,
-                  row_cluster=False,
-                  dendrogram_ratio=(0, .15),
-                  cbar_pos=(0.9, 0.1, .05, .25),
-                  cmap="Greens",
-                  figsize=(15,10),
-                  )
+    try:
 
-    handles = [Patch(facecolor=color_codes[name]) for name in color_codes]
-    plt.legend(handles, color_codes, title=args.metadata_column,
-           bbox_to_anchor=(1, 1), bbox_transform=plt.gcf().transFigure)
+        figure = sns.clustermap(figure_df,
+                    col_colors=col_colors,
+                    row_cluster=False,
+                    dendrogram_ratio=(0, .15),
+                    cbar_pos=(0.9, 0.1, .05, .25),
+                    cmap="Greens",
+                    figsize=(15,10),
+                    )
 
-    figure.savefig(f"lvl_{args.level}/{args.state}/hmap_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}_xsamples_ytaxa.png")
-    
-    reverse_figure_df = figure_df.transpose()
-    
-    figure = sns.clustermap(reverse_figure_df,
-                            row_colors=col_colors,
-                            col_cluster=False,
-                            dendrogram_ratio=(0.15, 0),
-                            cbar_pos=(0.9, 0.1, .05, .20),
-                            cmap="Greens",
-                            figsize=(10,15),
-                           )
-    plt.legend(handles, color_codes, title=args.metadata_column,
-        bbox_to_anchor=(1, 1), bbox_transform=plt.gcf().transFigure)
-    
-    figure.savefig(f"lvl_{args.level}/{args.state}/hmap_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}__xtaxa_ysamples.png")
+        handles = [Patch(facecolor=color_codes[name]) for name in color_codes]
+        plt.legend(handles, color_codes, title=args.metadata_column,
+            bbox_to_anchor=(1, 1), bbox_transform=plt.gcf().transFigure)
+
+        figure.savefig(f"lvl_{args.level}/{args.state}/hmap_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}_xsamples_ytaxa.png")
+        
+        reverse_figure_df = figure_df.transpose()
+        
+        figure = sns.clustermap(reverse_figure_df,
+                                row_colors=col_colors,
+                                col_cluster=False,
+                                dendrogram_ratio=(0.15, 0),
+                                cbar_pos=(0.9, 0.1, .05, .20),
+                                cmap="Greens",
+                                figsize=(10,15),
+                            )
+        plt.legend(handles, color_codes, title=args.metadata_column,
+            bbox_to_anchor=(1, 1), bbox_transform=plt.gcf().transFigure)
+        
+        figure.savefig(f"lvl_{args.level}/{args.state}/hmap_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}__xtaxa_ysamples.png")
+
+    except FloatingPointError:
+    # This happens when data cannot be clustered
+        print(f"{args.mode}, {args.state}, lvl {args.level}, category {args.metadata_column}: Could not cluster samples, generating unclustered heatmap instead.")
+
+        figure = sns.clustermap(figure_df,
+                    col_colors=col_colors,
+                    row_cluster=False,
+                    col_cluster=False,
+                    cbar_pos=(0.9, 0.1, .05, .25),
+                    cmap="Greens",
+                    figsize=(15,10),
+                    )     
+
+        figure.savefig(f"lvl_{args.level}/{args.state}/hmap_unclustered_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}_xsamples_ytaxa.png")
+        reverse_figure_df = figure_df.transpose()
+        
+        figure = sns.clustermap(reverse_figure_df,
+                                row_colors=col_colors,
+                                col_cluster=False,
+                                row_cluster=False,
+                                cbar_pos=(0.9, 0.1, .05, .20),
+                                cmap="Greens",
+                                figsize=(10,15),
+                            )
+                            
+        figure.savefig(f"lvl_{args.level}/{args.state}/hmap_unclustered_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}__xtaxa_ysamples.png")
+
+
 
     # Third file
     # Only significative taxa involved

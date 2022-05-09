@@ -77,11 +77,11 @@ def export_qzv(qzv_in, argument):
 
     return df_ancom, df_data, df_percent_abundances
 
-def get_significative_taxa(df, discard_col):
+def get_significative_taxa(df):
     # Get differentially expressed taxa
     # Those with "Reject null hypothesis" set as True
     significative_taxa = df[df["Reject null hypothesis"] == True].index
-    significative_taxa = significative_taxa.drop(columns=discard_col)
+    
     if len(significative_taxa) == 0:
         print(f"{args.mode}: no significative data found.")
         return None
@@ -142,11 +142,11 @@ save_long_wide(df_out_2, f"Ancom_result_w_rel_freq_{args.metadata_column}_uncoll
 
 # THIRD RESULT
 # (Only significative results)
-significative_taxa = get_significative_taxa(df_out_2, discard_col=args.metadata_column)
+significative_taxa = get_significative_taxa(df_out_2)
 
 if significative_taxa is not None:
 
-    print(significative_taxa)
+    significative_taxa.remove(args.metadata_column)
     
     rel_freq_df = pd.concat([tax_df, rel_freq_df], axis=1)
     rel_freq_df.index = list(rel_freq_df["Taxon"])
