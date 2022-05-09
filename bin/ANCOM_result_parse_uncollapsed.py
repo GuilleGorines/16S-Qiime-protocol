@@ -34,8 +34,8 @@ def save_long_wide(df, filename, rowname, colname):
     """
     Generates tsv for a dataframe and for its transposed
     """
-    df.to_csv(f"{filename}_row{rowname}_col{colname}.tsv", sep="\t")
-    df.transpose().to_csv(f"{filename}_row{colname}_col{rowname}.tsv", sep="\t")
+    df.to_csv(f"{filename}_row_{rowname}_col_{colname}.tsv", sep="\t")
+    df.transpose().to_csv(f"{filename}_row_{colname}_col_{rowname}.tsv", sep="\t")
     return
 
 def export_qzv(qzv_in, argument):
@@ -83,7 +83,7 @@ def get_significative_taxa(df):
     significative_taxa = df[df["Reject null hypothesis"] == True].index
 
     if len(significative_taxa) == 0:
-        print("No significative data found.")
+        print(f"{args.mode}, lvl {args.level}: no significative data found.")
         return None
     else:
         return list(significative_taxa)
@@ -145,6 +145,8 @@ save_long_wide(df_out_2, f"2-Ancom_result_w_rel_freq_{args.metadata_column}_unco
 significative_taxa = get_significative_taxa(df_out_2)
 
 if significative_taxa is not None:
+
+    print(significative_taxa)
     
     rel_freq_df = pd.concat([tax_df, rel_freq_df], axis=1)
     rel_freq_df.index = list(rel_freq_df["Taxon"])
@@ -217,6 +219,8 @@ if significative_taxa is not None:
 
     # Add the new columns
     df_out_3 = pd.concat([newcols, df_out_3], axis=1).drop(["Consensus", "ID"], axis=1)
-    save_long_wide(df_out_3, f"3-Significative_results_{args.metadata_column}_uncollapsed_raw_{args.mode}", "taxa", "ancom-samples")
+    save_long_wide(df_out_3, f"Significative_results_{args.metadata_column}_uncollapsed_raw_{args.mode}", "taxa", "ancom-samples")
 
+else:
+    sys.exit(0)
 

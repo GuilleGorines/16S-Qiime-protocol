@@ -13,8 +13,8 @@ def save_long_wide(df, filename, rowname, colname):
     """
     Generates tsv for a dataframe and for its transposed
     """
-    df.to_csv(f"{filename}_row{rowname}_col{colname}.tsv", sep="\t")
-    df.transpose().to_csv(f"{filename}_row{colname}_col{rowname}.tsv", sep="\t")
+    df.to_csv(f"{filename}_row_{rowname}_col_{colname}.tsv", sep="\t")
+    df.transpose().to_csv(f"{filename}_row_{colname}_col_{rowname}.tsv", sep="\t")
     return
 
 def export_qzv(qzv_in, argument):
@@ -62,7 +62,7 @@ def get_significative_taxa(df):
     significative_taxa = df[df["Reject null hypothesis"] == True].index
 
     if len(significative_taxa) == 0:
-        print("No significative data found.")
+        print(f"{args.mode}, {args.state}, lvl {args.level}: no significative data found.")
         return None
     else:
         return list(significative_taxa)
@@ -86,7 +86,7 @@ df_ancom, df_data, df_percent_abundances = export_qzv(args.qzv_in, args.metadata
 # generate first file
 # Full ANCOM results: ancom data, percent_abundances
 df_out_1 = pd.concat([df_ancom, df_data, df_percent_abundances], axis=1)
-save_long_wide(df_out_1, f"lvl_{args.level}/{args.state}/1-Complete_ancom_result_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}","taxa","ancom-full")
+save_long_wide(df_out_1, f"lvl_{args.level}/{args.state}/Complete_ancom_result_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}","taxa","ancom-full")
 
 # get the significative data 
 significative_taxa = get_significative_taxa(df_out_1)
@@ -99,11 +99,12 @@ column_df = pd.DataFrame(pd.read_csv(args.metadata, header=0, index_col=0, delim
 
 # Second file generated: ancom with the relative frequence
 df_out_2 = pd.concat([df_ancom, df_data, pd.concat([pd.DataFrame(column_df).transpose(), rel_abs_df], axis=0)], axis=1)
-save_long_wide(df_out_2, f"lvl_{args.level}/{args.state}/2-Ancom_result_w_rel_freq_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}", "taxa", "ancom-relfreq")
+save_long_wide(df_out_2, f"lvl_{args.level}/{args.state}/Ancom_result_w_rel_freq_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}", "taxa", "ancom-relfreq")
 
 # if there are any significative taxa
 # generate the heatmap with dendrogram plot
 if significative_taxa is not None:
+
     sig_tax_abundances = rel_abs_df.loc[significative_taxa, :]
     
     # change the headers of the table
@@ -169,7 +170,7 @@ if significative_taxa is not None:
 
     # Add the new columns
     df_out_3 = pd.concat([newcols, df_out_3], axis=1)
-    save_long_wide(df_out_3, f"lvl_{args.level}/{args.state}/3-Significative_results_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}", "taxa", "ancom-samples")
+    save_long_wide(df_out_3, f"lvl_{args.level}/{args.state}/Significative_results_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}", "taxa", "ancom-samples")
 
 else:
     sys.exit(0)
