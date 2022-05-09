@@ -83,7 +83,7 @@ def get_significative_taxa(df):
     significative_taxa = df[df["Reject null hypothesis"] == True].index
 
     if len(significative_taxa) == 0:
-        print(f"{args.mode}, lvl {args.level}: no significative data found.")
+        print(f"{args.mode}: no significative data found.")
         return None
     else:
         return list(significative_taxa)
@@ -128,7 +128,7 @@ save_long_wide(df_out_1, f"1-Complete_ancom_result_{args.metadata_column}_uncoll
 rel_freq_df = pd.read_csv(args.relfreq_in, header=0, index_col=0, delimiter="\t")
 
 # Import metadata
-column_df = pd.read_csv(args.metadata, header=0, index_col=0, delimiter="\t").pop(args.metadata_column)
+column_df = pd.DataFrame(pd.read_csv(args.metadata, header=0, index_col=0, delimiter="\t").pop(args.metadata_column)).transpose()
 
 # Generate second dataframe
 # (ANCOM results with relative frequency for each sample)
