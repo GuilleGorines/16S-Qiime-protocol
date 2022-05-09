@@ -166,7 +166,7 @@ if significative_taxa is not None:
     figure_df = sig_tax_abundances.rename(index=namedict)
     
     # associate color code to metadata
-    color_codes = dict(zip(column_df.squeeze().unique(), ["#00AA5A", "#C0AB52", "#e16a86",  "#00A6CA",  "#C699E7", "grey"]))
+    color_codes = dict(zip(column_df.squeeze().unique(), ["#00AA5A", "#C0AB52", "#E16A86",  "#00A6CA",  "#C699E7", "#9A9A9A", "#65B891", "#F7934C", "#0B4F6C", "#F2E2D2", "#E1CE7A", "#646536", "#FFDD4A", "#EF3054", "#3D314A"]))
     col_colors = column_df.squeeze().map(color_codes)
     
     figure = sns.clustermap(figure_df,
