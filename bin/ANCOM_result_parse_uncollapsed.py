@@ -77,11 +77,11 @@ def export_qzv(qzv_in, argument):
 
     return df_ancom, df_data, df_percent_abundances
 
-def get_significative_taxa(df):
+def get_significative_taxa(df, discard_col):
     # Get differentially expressed taxa
     # Those with "Reject null hypothesis" set as True
     significative_taxa = df[df["Reject null hypothesis"] == True].index
-
+    significative_taxa = significative_taxa.drop(columns=discard_col)
     if len(significative_taxa) == 0:
         print(f"{args.mode}: no significative data found.")
         return None
@@ -121,7 +121,7 @@ tax_df_meta = pd.concat([newrow, tax_df], axis=0)
 
 # First result: complete ancom results
 df_out_1 = pd.concat([tax_df, df_out_1], axis=1)
-save_long_wide(df_out_1, f"1-Complete_ancom_result_{args.metadata_column}_uncollapsed_raw_{args.mode}","taxa","ancom-full")
+save_long_wide(df_out_1, f"Complete_ancom_result_{args.metadata_column}_uncollapsed_raw_{args.mode}","taxa","ancom-full")
 
 # SECOND RESULT
 # Import relative abundances
@@ -138,11 +138,11 @@ ids = ["-"] + list(df_out_2.index)[1:]
 df_out_2.index = new_index
 df_out_2["Taxon"] = ids
 df_out_2 = df_out_2.rename(columns={"Taxon" : "ID"})
-save_long_wide(df_out_2, f"2-Ancom_result_w_rel_freq_{args.metadata_column}_uncollapsed_raw_{args.mode}", "tax-id", "tax-ancom-relfreq")
+save_long_wide(df_out_2, f"Ancom_result_w_rel_freq_{args.metadata_column}_uncollapsed_raw_{args.mode}", "tax-id", "tax-ancom-relfreq")
 
 # THIRD RESULT
 # (Only significative results)
-significative_taxa = get_significative_taxa(df_out_2)
+significative_taxa = get_significative_taxa(df_out_2, discard_col=args.metadata_column)
 
 if significative_taxa is not None:
 
