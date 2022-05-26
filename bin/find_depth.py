@@ -9,7 +9,7 @@ parser.add_argument('--mode', help='mode to choose from', choices= ["full", "fil
 args = parser.parse_args()
 
 # Open feature table
-feature_table_df = Artifact.load(args.qzv_in).view(pd.DataFrame)
+feature_table_df = Artifact.load(args.qza_in).view(pd.DataFrame)
 
 # Sum the number of features (this is, the depth)
 feature_table_df["Total depth"] = feature_table_df.sum(axis=1).astype(int)
