@@ -34,8 +34,8 @@ def save_long_wide(df, filename, rowname, colname):
     """
     Generates tsv for a dataframe and for its transposed
     """
-    df.to_csv(f"{filename}_row{rowname}_col{colname}.tsv", sep="\t")
-    df.transpose().to_csv(f"{filename}_row{colname}_col{rowname}.tsv", sep="\t")
+    df.to_csv(f"{filename}_row_{rowname}_col_{colname}.tsv", sep="\t")
+    df.transpose().to_csv(f"{filename}_row_{colname}_col_{rowname}.tsv", sep="\t")
     return
 
 def export_qzv(qzv_in, argument):
@@ -81,9 +81,9 @@ def get_significative_taxa(df):
     # Get differentially expressed taxa
     # Those with "Reject null hypothesis" set as True
     significative_taxa = df[df["Reject null hypothesis"] == True].index
-
+    
     if len(significative_taxa) == 0:
-        print("No significative data found.")
+        print(f"{args.mode}: no significative data found.")
         return None
     else:
         return list(significative_taxa)
@@ -121,14 +121,14 @@ tax_df_meta = pd.concat([newrow, tax_df], axis=0)
 
 # First result: complete ancom results
 df_out_1 = pd.concat([tax_df, df_out_1], axis=1)
-save_long_wide(df_out_1, f"1-Complete_ancom_result_{args.metadata_column}_uncollapsed_raw_{args.mode}","taxa","ancom-full")
+save_long_wide(df_out_1, f"Complete_ancom_result_{args.metadata_column}_uncollapsed_raw_{args.mode}","taxa","ancom-full")
 
 # SECOND RESULT
 # Import relative abundances
 rel_freq_df = pd.read_csv(args.relfreq_in, header=0, index_col=0, delimiter="\t")
 
 # Import metadata
-column_df = pd.read_csv(args.metadata, header=0, index_col=0, delimiter="\t").pop(args.metadata_column)
+column_df = pd.DataFrame(pd.read_csv(args.metadata, header=0, index_col=0, delimiter="\t").pop(args.metadata_column)).transpose()
 
 # Generate second dataframe
 # (ANCOM results with relative frequency for each sample)
@@ -138,13 +138,15 @@ ids = ["-"] + list(df_out_2.index)[1:]
 df_out_2.index = new_index
 df_out_2["Taxon"] = ids
 df_out_2 = df_out_2.rename(columns={"Taxon" : "ID"})
-save_long_wide(df_out_2, f"2-Ancom_result_w_rel_freq_{args.metadata_column}_uncollapsed_raw_{args.mode}", "tax-id", "tax-ancom-relfreq")
+save_long_wide(df_out_2, f"Ancom_result_w_rel_freq_{args.metadata_column}_uncollapsed_raw_{args.mode}", "tax-id", "tax-ancom-relfreq")
 
 # THIRD RESULT
 # (Only significative results)
 significative_taxa = get_significative_taxa(df_out_2)
 
 if significative_taxa is not None:
+
+    significative_taxa.remove(args.metadata_column)
     
     rel_freq_df = pd.concat([tax_df, rel_freq_df], axis=1)
     rel_freq_df.index = list(rel_freq_df["Taxon"])
@@ -166,7 +168,7 @@ if significative_taxa is not None:
     figure_df = sig_tax_abundances.rename(index=namedict)
     
     # associate color code to metadata
-    color_codes = dict(zip(column_df.squeeze().unique(), ["#00AA5A", "#C0AB52", "#e16a86",  "#00A6CA",  "#C699E7", "grey"]))
+    color_codes = dict(zip(column_df.squeeze().unique(), ["#00AA5A", "#C0AB52", "#E16A86",  "#00A6CA",  "#C699E7", "#9A9A9A", "#65B891", "#F7934C", "#0B4F6C", "#F2E2D2", "#E1CE7A", "#646536", "#FFDD4A", "#EF3054", "#3D314A"]))
     col_colors = column_df.squeeze().map(color_codes)
     
     figure = sns.clustermap(figure_df,
@@ -217,6 +219,8 @@ if significative_taxa is not None:
 
     # Add the new columns
     df_out_3 = pd.concat([newcols, df_out_3], axis=1).drop(["Consensus", "ID"], axis=1)
-    save_long_wide(df_out_3, f"3-Significative_results_{args.metadata_column}_uncollapsed_raw_{args.mode}", "taxa", "ancom-samples")
+    save_long_wide(df_out_3, f"Significative_results_{args.metadata_column}_uncollapsed_raw_{args.mode}", "taxa", "ancom-samples")
 
+else:
+    sys.exit(0)
 

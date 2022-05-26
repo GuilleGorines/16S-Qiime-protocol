@@ -13,8 +13,8 @@ def save_long_wide(df, filename, rowname, colname):
     """
     Generates tsv for a dataframe and for its transposed
     """
-    df.to_csv(f"{filename}_row{rowname}_col{colname}.tsv", sep="\t")
-    df.transpose().to_csv(f"{filename}_row{colname}_col{rowname}.tsv", sep="\t")
+    df.to_csv(f"{filename}_row_{rowname}_col_{colname}.tsv", sep="\t")
+    df.transpose().to_csv(f"{filename}_row_{colname}_col_{rowname}.tsv", sep="\t")
     return
 
 def export_qzv(qzv_in, argument):
@@ -62,7 +62,7 @@ def get_significative_taxa(df):
     significative_taxa = df[df["Reject null hypothesis"] == True].index
 
     if len(significative_taxa) == 0:
-        print("No significative data found.")
+        print(f"{args.mode}, {args.state}, lvl {args.level}, category {args.metadata_column}: no significative data found.")
         return None
     else:
         return list(significative_taxa)
@@ -86,7 +86,7 @@ df_ancom, df_data, df_percent_abundances = export_qzv(args.qzv_in, args.metadata
 # generate first file
 # Full ANCOM results: ancom data, percent_abundances
 df_out_1 = pd.concat([df_ancom, df_data, df_percent_abundances], axis=1)
-save_long_wide(df_out_1, f"lvl_{args.level}/{args.state}/1-Complete_ancom_result_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}","taxa","ancom-full")
+save_long_wide(df_out_1, f"lvl_{args.level}/{args.state}/Complete_ancom_result_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}","taxa","ancom-full")
 
 # get the significative data 
 significative_taxa = get_significative_taxa(df_out_1)
@@ -99,11 +99,12 @@ column_df = pd.DataFrame(pd.read_csv(args.metadata, header=0, index_col=0, delim
 
 # Second file generated: ancom with the relative frequence
 df_out_2 = pd.concat([df_ancom, df_data, pd.concat([pd.DataFrame(column_df).transpose(), rel_abs_df], axis=0)], axis=1)
-save_long_wide(df_out_2, f"lvl_{args.level}/{args.state}/2-Ancom_result_w_rel_freq_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}", "taxa", "ancom-relfreq")
+save_long_wide(df_out_2, f"lvl_{args.level}/{args.state}/Ancom_result_w_rel_freq_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}", "taxa", "ancom-relfreq")
 
 # if there are any significative taxa
 # generate the heatmap with dendrogram plot
 if significative_taxa is not None:
+
     sig_tax_abundances = rel_abs_df.loc[significative_taxa, :]
     
     # change the headers of the table
@@ -118,40 +119,71 @@ if significative_taxa is not None:
     namedict = { row : newname for row, newname in zip(rownames, newnames)}
     
     figure_df = sig_tax_abundances.rename(index=namedict)
-    
+
     # associate color code to metadata
-    color_codes = dict(zip(column_df.unique(), ["#00AA5A", "#C0AB52", "#e16a86",  "#00A6CA",  "#C699E7", "grey"]))
-    col_colors = column_df.map(color_codes)
+    color_codes = dict(zip(column_df.squeeze().unique(), ["#00AA5A", "#C0AB52", "#E16A86",  "#00A6CA",  "#C699E7", "#9A9A9A", "#65B891", "#F7934C", "#0B4F6C", "#F2E2D2", "#E1CE7A", "#646536", "#FFDD4A", "#EF3054", "#3D314A"]))
+    col_colors = column_df.squeeze().map(color_codes)
     
-    figure = sns.clustermap(figure_df,
-                  col_colors=col_colors,
-                  row_cluster=False,
-                  dendrogram_ratio=(0, .15),
-                  cbar_pos=(0.9, 0.1, .05, .25),
-                  cmap="Greens",
-                  figsize=(15,10),
-                  )
+    try:
 
-    handles = [Patch(facecolor=color_codes[name]) for name in color_codes]
-    plt.legend(handles, color_codes, title=args.metadata_column,
-           bbox_to_anchor=(1, 1), bbox_transform=plt.gcf().transFigure)
+        figure = sns.clustermap(figure_df,
+                    col_colors=col_colors,
+                    row_cluster=False,
+                    dendrogram_ratio=(0, .15),
+                    cbar_pos=(0.9, 0.1, .05, .25),
+                    cmap="Greens",
+                    figsize=(15,10),
+                    )
 
-    figure.savefig(f"lvl_{args.level}/{args.state}/hmap_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}_xsamples_ytaxa.png")
-    
-    reverse_figure_df = figure_df.transpose()
-    
-    figure = sns.clustermap(reverse_figure_df,
-                            row_colors=col_colors,
-                            col_cluster=False,
-                            dendrogram_ratio=(0.15, 0),
-                            cbar_pos=(0.9, 0.1, .05, .20),
-                            cmap="Greens",
-                            figsize=(10,15),
-                           )
-    plt.legend(handles, color_codes, title=args.metadata_column,
-        bbox_to_anchor=(1, 1), bbox_transform=plt.gcf().transFigure)
-    
-    figure.savefig(f"lvl_{args.level}/{args.state}/hmap_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}__xtaxa_ysamples.png")
+        handles = [Patch(facecolor=color_codes[name]) for name in color_codes]
+        plt.legend(handles, color_codes, title=args.metadata_column,
+            bbox_to_anchor=(1, 1), bbox_transform=plt.gcf().transFigure)
+
+        figure.savefig(f"lvl_{args.level}/{args.state}/hmap_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}_xsamples_ytaxa.png")
+        
+        reverse_figure_df = figure_df.transpose()
+        
+        figure = sns.clustermap(reverse_figure_df,
+                                row_colors=col_colors,
+                                col_cluster=False,
+                                dendrogram_ratio=(0.15, 0),
+                                cbar_pos=(0.9, 0.1, .05, .20),
+                                cmap="Greens",
+                                figsize=(10,15),
+                            )
+        plt.legend(handles, color_codes, title=args.metadata_column,
+            bbox_to_anchor=(1, 1), bbox_transform=plt.gcf().transFigure)
+        
+        figure.savefig(f"lvl_{args.level}/{args.state}/hmap_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}__xtaxa_ysamples.png")
+
+    except FloatingPointError:
+    # This happens when data cannot be clustered
+        print(f"{args.mode}, {args.state}, lvl {args.level}, category {args.metadata_column}: Could not cluster samples, generating unclustered heatmap instead.")
+
+        figure = sns.clustermap(figure_df,
+                    col_colors=col_colors,
+                    row_cluster=False,
+                    col_cluster=False,
+                    cbar_pos=(0.9, 0.1, .05, .25),
+                    cmap="Greens",
+                    figsize=(15,10),
+                    )     
+
+        figure.savefig(f"lvl_{args.level}/{args.state}/hmap_unclustered_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}_xsamples_ytaxa.png")
+        reverse_figure_df = figure_df.transpose()
+        
+        figure = sns.clustermap(reverse_figure_df,
+                                row_colors=col_colors,
+                                col_cluster=False,
+                                row_cluster=False,
+                                cbar_pos=(0.9, 0.1, .05, .20),
+                                cmap="Greens",
+                                figsize=(10,15),
+                            )
+                            
+        figure.savefig(f"lvl_{args.level}/{args.state}/hmap_unclustered_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}__xtaxa_ysamples.png")
+
+
 
     # Third file
     # Only significative taxa involved
@@ -169,7 +201,7 @@ if significative_taxa is not None:
 
     # Add the new columns
     df_out_3 = pd.concat([newcols, df_out_3], axis=1)
-    save_long_wide(df_out_3, f"lvl_{args.level}/{args.state}/3-Significative_results_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}", "taxa", "ancom-samples")
+    save_long_wide(df_out_3, f"lvl_{args.level}/{args.state}/Significative_results_{args.metadata_column}_lvl_{args.level}_{args.state}_{args.mode}", "taxa", "ancom-samples")
 
 else:
     sys.exit(0)
