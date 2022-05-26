@@ -94,12 +94,12 @@ def digest_name(string):
 
 
 parser=argparse.ArgumentParser(description="")
-parser.add_argument("--qza-taxonomy"   , help="Taxonomy file in qza format", dest="tax_qza", required=True, )
-parser.add_argument("--qzv-ancom"      , help="ANCOM results file in qzv format", dest="ancom_qzv", required=True )
-parser.add_argument("--mode"           , help='mode to choose from (full/filt)',  dest="mode", required=True, choices= ["full", "filt"],)
-parser.add_argument("--metadata"       , help='metadata file', dest="metadata", required=True)
+parser.add_argument("--qza-taxonomy"    , help="Taxonomy file in qza format", dest="tax_qza", required=True, )
+parser.add_argument("--qzv-ancom"       , help="ANCOM results file in qzv format", dest="ancom_qzv", required=True )
+parser.add_argument("--mode"            , help='mode to choose from (full/filt)',  dest="mode", required=True, choices= ["full", "filt"],)
+parser.add_argument("--metadata"        , help='metadata file', dest="metadata", required=True)
 parser.add_argument("--metadata-column" , help="metadata column for the analysis", dest="metadata_column", required=True)
-parser.add_argument("--rel-freq-file"  , help='relative frequences file', dest="relfreq_in", required=True)
+parser.add_argument("--rel-freq-file"   , help='relative frequences file', dest="relfreq_in", required=True)
 args = parser.parse_args()
 
 # Import ANCOM result
